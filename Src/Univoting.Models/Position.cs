@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Univoting.Models
 {
@@ -6,6 +7,8 @@ namespace Univoting.Models
     {
         public string Name { get; set; }
         public ICollection<Vote> Votes { get; set; }
+        public Guid RankId { get; set; }
+        public Rank Rank { get; set; }
         public ICollection<SkippedVote> SkippedVotes { get; set; }
         public ICollection<Candidate> Candidates { get; set; }
 
