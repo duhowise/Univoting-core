@@ -1,0 +1,42 @@
+﻿syntax="proto3";
+option  csharp_namespace="Univoting.Services";
+import	"Protos/messages.proto";
+
+service ElectionConfigurationService{
+rpc AddCandidates(stream AddCandidatesRequest) returns (ServiceResponse);
+rpc AddPositions(stream AddPositionsRequest) returns (ServiceResponse);
+rpc AddElectionConfigurations(stream AddElectionConfigurationRequest) returns (ServiceResponse);
+rpc AddVoters(stream AddVotersRequest) returns (ServiceResponse);
+rpc AddModerators(stream AddModeratorsRequest) returns (ServiceResponse);
+
+
+rpc RemoveCandidates(stream AddCandidatesRequest) returns (ServiceResponse);
+rpc RemovePositions(stream AddPositionsRequest) returns (ServiceResponse);
+rpc RemoveElectionConfigurations(stream AddElectionConfigurationRequest) returns (ServiceResponse);
+rpc RemoveVoters(stream AddVotersRequest) returns (ServiceResponse);
+rpc RemoveModerators(stream AddModeratorsRequest) returns (ServiceResponse);
+
+
+
+rpc UpdateCandidates(stream AddCandidatesRequest) returns (ServiceResponse);
+rpc UpdatePositions(stream AddPositionsRequest) returns (ServiceResponse);
+rpc UpdateElectionConfigurations(stream AddElectionConfigurationRequest) returns (ServiceResponse);
+rpc UpdateVoters(stream AddVotersRequest) returns (ServiceResponse);
+rpc UpdateModerators(stream AddModeratorsRequest) returns (ServiceResponse);
+
+
+
+rpc GetAllCandidates(stream AddCandidatesRequest) returns (ServiceResponse);
+rpc GetAllPositions(stream AddPositionsRequest) returns (ServiceResponse);
+rpc GetAllElectionConfigurations(stream AddElectionConfigurationRequest) returns (ServiceResponse);
+rpc GetAllVoters(stream AddVotersRequest) returns (ServiceResponse);
+rpc GetAllModerators(stream AddModeratorsRequest) returns (ServiceResponse);
+
+
+rpc GetCandidate(stream AddCandidatesRequest) returns (ServiceResponse);
+rpc GetPosition(stream AddPositionsRequest) returns (ServiceResponse);
+rpc GetElectionConfiguration(stream AddElectionConfigurationRequest) returns (ServiceResponse);
+rpc GetVoter(stream AddVotersRequest) returns (ServiceResponse);
+rpc GetModerator(stream AddModeratorsRequest) returns (ServiceResponse);
+
+}

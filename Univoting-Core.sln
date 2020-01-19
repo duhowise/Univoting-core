@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Univoting.Models", "Src\Uni
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Univoting.Services", "Src\Univoting.Services\Univoting.Services.csproj", "{11DEA05A-0C9A-40E5-9F86-2373E74D0C30}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Univoting.Data", "Src\Univoting.Data\Univoting.Data.csproj", "{AB2F857D-70A6-4334-9E81-6AE55C0324FD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{11DEA05A-0C9A-40E5-9F86-2373E74D0C30}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{11DEA05A-0C9A-40E5-9F86-2373E74D0C30}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{11DEA05A-0C9A-40E5-9F86-2373E74D0C30}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AB2F857D-70A6-4334-9E81-6AE55C0324FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AB2F857D-70A6-4334-9E81-6AE55C0324FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AB2F857D-70A6-4334-9E81-6AE55C0324FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AB2F857D-70A6-4334-9E81-6AE55C0324FD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

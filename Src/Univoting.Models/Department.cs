@@ -2,10 +2,9 @@
 
 namespace Univoting.Models
 {
-    public class Moderator:KeyModel
-    {
+    public class Department:KeyModel
+    {  
         public string Name { get; set; }
-        public Badge Badge { get; set; }
         public Guid ElectionId { get; set; }
         public Election Election { get; set; }
     }

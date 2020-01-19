@@ -9,5 +9,7 @@ namespace Univoting.Models
         public DateTime Time { get; set; }
         public Position Position { get; set; }
         public Guid PositionId { get; set; }
+        public Guid ElectionId { get; set; }
+        public Election Election { get; set; }
     }
 }

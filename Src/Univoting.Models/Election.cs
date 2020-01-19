@@ -11,5 +11,6 @@ namespace Univoting.Models
         public ICollection<Voter> Voters { get; set; }
         public ICollection<Position> Positions { get; set; }
         public ICollection<Moderator> Moderators { get; set; }
+        public ICollection<PollingStation> PollingStations { get; set; }
     }
 }

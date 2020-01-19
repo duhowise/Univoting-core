@@ -12,5 +12,7 @@ namespace Univoting.Models
         public ICollection<SkippedVote> SkippedVotes { get; set; }
         public ICollection<Candidate> Candidates { get; set; }
 
+        public Guid ElectionId { get; set; }
+        public Election Election { get; set; }
     }
 }
