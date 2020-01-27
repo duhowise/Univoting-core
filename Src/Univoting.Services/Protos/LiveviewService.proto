@@ -1,10 +1,9 @@
 ﻿syntax="proto3";
 option csharp_namespace="Univoting.Services";
 import	"Protos/messages.proto";
-import "google/protobuf/empty.proto";
 
 service LiveViewService{
 rpc GetVotesForPosition(voteCountRequest) returns(voteCountResult);
 rpc GetSkippedVoteForPosition(voteCountRequest) returns(voteCountResult);
-rpc GetAllPositions(google.protobuf.Empty) returns (AllPositionsResult);
+rpc GetAllPositions(GetAllPositionsRequest) returns (AllPositionsResult);
 }

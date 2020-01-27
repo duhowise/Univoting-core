@@ -75,7 +75,10 @@ Badge Badge=2;
 string ElectionId=3;
 }
 
+message GetAllPositionsRequest{
+	string ElectionId=3;
 
+}
 enum VotingStatus{
 	PENDING =0;
 	INPROGRESS=1;

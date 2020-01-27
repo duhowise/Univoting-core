@@ -1,36 +1,58 @@
 ﻿using System;
-using System.Runtime.InteropServices;
+using System.Linq;
 using System.Threading.Tasks;
-using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
+using Microsoft.EntityFrameworkCore;
+using Univoting.Data;
 
 namespace Univoting.Services.Implementations
 {
     public class LiveViewService:Services.LiveViewService.LiveViewServiceBase
     {
-        public override Task<voteCountResult> GetVotesForPosition(voteCountRequest request, ServerCallContext context)
+        private readonly UnivotingContext _context;
+
+        public LiveViewService(UnivotingContext context)
         {
-            var positionId = request.PositionId;
-           return Task.FromResult(new voteCountResult
-           {
-               Count = Convert.ToInt64(40)
-           });
+            _context = context;
+        }
+        public override async Task<voteCountResult> GetVotesForPosition(voteCountRequest request, ServerCallContext context)
+        {
+            Guid.TryParse(request.PositionId, out var positionId);
+            return new voteCountResult
+            {
+                Count = await _context.Votes.Where(x => x.PositionId == positionId).CountAsync()
+            };
         }
 
-        public override Task<AllPositionsResult> GetAllPositions(Empty request, ServerCallContext context)
+        public override async Task<AllPositionsResult> GetAllPositions(GetAllPositionsRequest request, ServerCallContext context)
         {
-            return Task.FromResult(new AllPositionsResult
+            try
             {
-                Positions = {new Position{ElectionId = "44F8DF3F-6D4F-4F41-AFD4-856910DC23F8", PositionId = "",PositionName = ""}, new Position { ElectionId = "44F8DF3F-6D4F-4F41-AFD4-856910DC23F8", PositionId = "", PositionName = "" } }
-            });
+                Guid.TryParse(request.ElectionId, out var electionId);
+                var positions = await _context.Positions.Where(x => x.ElectionId == electionId).Select(x=> new Position
+                {
+                    PositionId = x.Id.ToString(),ElectionId = x.ElectionId.ToString(),PositionName = x.Name
+                }).ToListAsync();
+
+                var result=new AllPositionsResult();
+                result.Positions.AddRange(positions);
+
+                return result;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
 
-        public override Task<voteCountResult> GetSkippedVoteForPosition(voteCountRequest request, ServerCallContext context)
+        public override async Task<voteCountResult> GetSkippedVoteForPosition(voteCountRequest request, ServerCallContext context)
         {
-            return Task.FromResult(new voteCountResult
+            Guid.TryParse(request.PositionId, out var positionId);
+            return new voteCountResult
             {
-                Count = Convert.ToInt64(40)
-            });
+                Count = await _context.Votes.Where(x => x.PositionId == positionId).CountAsync()
+            };
         }
     }
 }
