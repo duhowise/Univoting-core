@@ -1,7 +1,11 @@
 ﻿namespace Univoting.Models
 {
-    public class Rank:KeyModel
+    public class Priority:KeyModel
     {
         public int Number { get; set; }
     }
+    
+    
+    
+   
 }

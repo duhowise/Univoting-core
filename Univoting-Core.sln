@@ -3,11 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29613.14
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Univoting.Models", "Src\Univoting.Models\Univoting.Models.csproj", "{6B32C7EE-1A9D-41B1-B3D5-F8908670C527}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Univoting.Models", "Src\Univoting.Models\Univoting.Models.csproj", "{6B32C7EE-1A9D-41B1-B3D5-F8908670C527}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Univoting.Services", "Src\Univoting.Services\Univoting.Services.csproj", "{11DEA05A-0C9A-40E5-9F86-2373E74D0C30}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Univoting.Services", "Src\Univoting.Services\Univoting.Services.csproj", "{11DEA05A-0C9A-40E5-9F86-2373E74D0C30}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Univoting.Data", "Src\Univoting.Data\Univoting.Data.csproj", "{AB2F857D-70A6-4334-9E81-6AE55C0324FD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Univoting.Data", "Src\Univoting.Data\Univoting.Data.csproj", "{AB2F857D-70A6-4334-9E81-6AE55C0324FD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Univoting.ConsoleClient", "Src\Univoting.ConsoleClient\Univoting.ConsoleClient.csproj", "{DC23CEB3-696A-447B-8C18-238B9F6D450C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{AB2F857D-70A6-4334-9E81-6AE55C0324FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AB2F857D-70A6-4334-9E81-6AE55C0324FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AB2F857D-70A6-4334-9E81-6AE55C0324FD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DC23CEB3-696A-447B-8C18-238B9F6D450C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DC23CEB3-696A-447B-8C18-238B9F6D450C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DC23CEB3-696A-447B-8C18-238B9F6D450C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DC23CEB3-696A-447B-8C18-238B9F6D450C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

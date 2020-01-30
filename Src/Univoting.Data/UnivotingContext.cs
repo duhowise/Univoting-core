@@ -8,37 +8,53 @@ namespace Univoting.Data
 {
     public class UnivotingContext:DbContext
     {
-        private readonly IConfigurationRoot _config;
 
-        public UnivotingContext()
+        public UnivotingContext(DbContextOptions<UnivotingContext> contextOptions):base(contextOptions)
         {
-           _config=new ConfigurationBuilder()
-               .SetBasePath(Directory.GetCurrentDirectory())
-               .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-               .Build();
-        }
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.UseSqlServer(_config.GetConnectionString(""));
+            
         }
 
+        #region ManualConfig
+
+        //private readonly IConfigurationRoot _config;
+
+        //public UnivotingContext()
+        //{
+        //   _config=new ConfigurationBuilder()
+        //       .SetBasePath(Directory.GetCurrentDirectory())
+        //       .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+        //       .Build();
+        //}
+        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        //{
+        //    optionsBuilder.UseSqlServer(_config.GetConnectionString(""));
+        //}
+        
+
+        #endregion
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             foreach (
                 var pb in modelBuilder.Model.GetEntityTypes()
-                    
+                    .SelectMany(t => t.GetProperties()
                         .Where(p => p.ClrType == typeof(string)))
-                    
+                    .Select(p => modelBuilder.Entity(p.DeclaringEntityType.ClrType).Property(p.Name)))
             {
-                
+                pb.IsUnicode(false).HasMaxLength(150);
             }
+
+            modelBuilder.Entity<Candidate>().HasOne(x => x.Priority);
+            modelBuilder.Entity<Position>().HasOne(x => x.Priority);
+            modelBuilder.Entity<Voter>().HasMany(c => c.SkippedVotes).WithOne(x => x.Voter).OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Voter>().HasMany(c => c.Votes).WithOne(x => x.Voter).OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Vote>().HasOne(c => c.Position).WithMany(x=>x.Votes).OnDelete(DeleteBehavior.Restrict);
         }
 
         public  DbSet<Vote> Votes { get; set; }
         public  DbSet<Voter> Voters { get; set; }
         public  DbSet<Candidate> Candidates { get; set; }
         public  DbSet<Position> Positions { get; set; }
-        public  DbSet<Rank> Ranks { get; set; }
+        public  DbSet<Priority> Priorities { get; set; }
         public  DbSet<SkippedVote> SkippedVotes { get; set; }
         public  DbSet<Election> Elections { get; set; }
         public  DbSet<Moderator> Moderators { get; set; }

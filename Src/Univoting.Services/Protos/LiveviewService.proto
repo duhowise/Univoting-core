@@ -1,6 +1,6 @@
 ﻿syntax="proto3";
 option csharp_namespace="Univoting.Services";
-import	"Protos/messages.proto";
+import	"messages.proto";
 
 service LiveViewService{
 rpc GetVotesForPosition(voteCountRequest) returns(voteCountResult);

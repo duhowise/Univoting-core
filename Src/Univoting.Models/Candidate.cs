@@ -11,10 +11,9 @@ namespace Univoting.Models
         public Position Position { get; set; }
         public Guid PositionId { get; set; }
         public ICollection<Vote> Votes { get; set; }
-        public Rank Rank { get; set; }
+        public Priority Priority { get; set; }
         public Guid RankId { get; set; }
         public Guid ElectionId { get; set; }
-        public Election Election { get; set; }
 
 
     }
