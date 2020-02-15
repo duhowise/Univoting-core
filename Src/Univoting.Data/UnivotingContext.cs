@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.Extensions.Configuration;
 using Univoting.Models;
 
@@ -48,6 +49,8 @@ namespace Univoting.Data
             modelBuilder.Entity<Voter>().HasMany(c => c.SkippedVotes).WithOne(x => x.Voter).OnDelete(DeleteBehavior.Restrict);
             modelBuilder.Entity<Voter>().HasMany(c => c.Votes).WithOne(x => x.Voter).OnDelete(DeleteBehavior.Restrict);
             modelBuilder.Entity<Vote>().HasOne(c => c.Position).WithMany(x=>x.Votes).OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Moderator>().Property(x => x.Badge).HasConversion(new EnumToStringConverter<Badge>());
+            modelBuilder.Entity<Voter>().Property(x => x.VotingStatus).HasConversion(new EnumToStringConverter<VotingStatus>());
         }
 
         public  DbSet<Vote> Votes { get; set; }
