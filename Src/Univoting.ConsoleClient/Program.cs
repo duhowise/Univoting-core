@@ -9,17 +9,9 @@ namespace Univoting.ConsoleClient
 {
     class Program
     {
-        private static IConfiguration _configuration;
+        static  GrpcChannel _channel;
 
-        public Program()
-        {
-            _configuration = new ConfigurationBuilder()
-                   .SetBasePath(Directory.GetCurrentDirectory())
-                   .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                   .Build();
-
-
-        }
+      
         private static LiveViewService.LiveViewServiceClient _liveViewService;
         private static voteCountResult _positionCount=null;
         private static voteCountResult _positionSkippedCount=null;
@@ -37,6 +29,12 @@ namespace Univoting.ConsoleClient
         }
         static async Task Main(string[] args)
         {
+            IConfiguration configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", true, true)
+                .Build();
+
+            _channel = GrpcChannel.ForAddress(configuration.GetValue<string>("ServerAddress"));
             var positionsResult =await LiveViewServiceClient.GetAllPositionsAsync(new GetAllPositionsRequest
             {
                 ElectionId = "3f8e6896-4c7d-15f5-a018-75d8bd200d7c"
