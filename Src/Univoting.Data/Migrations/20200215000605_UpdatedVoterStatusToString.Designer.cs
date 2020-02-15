@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Univoting.Data;
 
 namespace Univoting.Data.Migrations
 {
     [DbContext(typeof(UnivotingContext))]
-    partial class UnivotingContextModelSnapshot : ModelSnapshot
+    [Migration("20200215000605_UpdatedVoterStatusToString")]
+    partial class UpdatedVoterStatusToString
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
