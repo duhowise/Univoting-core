@@ -21,8 +21,7 @@ namespace Univoting.ConsoleClient
             get
             {
                 if (_liveViewService != null) return _liveViewService;
-                var channel = GrpcChannel.ForAddress("https://localhost:5001");
-                _liveViewService = new Univoting.Services.LiveViewService.LiveViewServiceClient(channel);
+                _liveViewService = new Univoting.Services.LiveViewService.LiveViewServiceClient(_channel);
                 return _liveViewService;
             }
 
@@ -57,6 +56,8 @@ namespace Univoting.ConsoleClient
 
                 Console.WriteLine($"Position name {position.PositionName} has {_positionCount.Count} votes and {_positionSkippedCount.Count} Skipped votes");
             }
+            Console.ReadLine();
+
         }
     }
 }
