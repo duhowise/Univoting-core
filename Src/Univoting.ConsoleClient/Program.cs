@@ -21,7 +21,8 @@ namespace Univoting.ConsoleClient
             get
             {
                 if (_liveViewService != null) return _liveViewService;
-                _liveViewService = new Univoting.Services.LiveViewService.LiveViewServiceClient(_channel);
+                var channel = GrpcChannel.ForAddress("https://localhost:44348");
+                _liveViewService = new Univoting.Services.LiveViewService.LiveViewServiceClient(channel);
                 return _liveViewService;
             }
 
