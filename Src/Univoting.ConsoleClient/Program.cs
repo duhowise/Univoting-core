@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using Grpc.Net.Client;
 using Microsoft.Extensions.Configuration;
@@ -10,9 +11,14 @@ namespace Univoting.ConsoleClient
     {
         private static IConfiguration _configuration;
 
-        public Program(IConfiguration configuration)
+        public Program()
         {
-            _configuration = configuration;
+            _configuration = new ConfigurationBuilder()
+                   .SetBasePath(Directory.GetCurrentDirectory())
+                   .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                   .Build();
+
+
         }
         private static LiveViewService.LiveViewServiceClient _liveViewService;
         private static voteCountResult _positionCount=null;
@@ -23,7 +29,7 @@ namespace Univoting.ConsoleClient
             get
             {
                 if (_liveViewService != null) return _liveViewService;
-                var channel = GrpcChannel.ForAddress(_configuration.GetValue<string>("ServerAddress"));
+                var channel = GrpcChannel.ForAddress("https://localhost:44348");
                 _liveViewService = new Univoting.Services.LiveViewService.LiveViewServiceClient(channel);
                 return _liveViewService;
             }
@@ -33,7 +39,7 @@ namespace Univoting.ConsoleClient
         {
             var positionsResult =await LiveViewServiceClient.GetAllPositionsAsync(new GetAllPositionsRequest
             {
-                ElectionId = ""
+                ElectionId = "3f8e6896-4c7d-15f5-a018-75d8bd200d7c"
             });
 
 

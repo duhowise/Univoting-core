@@ -20,6 +20,7 @@ namespace Univoting.Services
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<UnivotingContext>(options => options.UseSqlServer(_configuration.GetConnectionString("DefaultConnection")));
+            services.AddGrpc();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -32,7 +33,10 @@ namespace Univoting.Services
             app.UseRouting();
 
             app.UseEndpoints(endpoints =>
+
             {
+
+                endpoints.MapGrpcService<Implementations.LiveViewService>();
                 endpoints.MapGet("/", async context =>
                 {
                     await context.Response.WriteAsync("Hello World!");
