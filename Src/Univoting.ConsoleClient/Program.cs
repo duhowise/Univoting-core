@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using Grpc.Net.Client;
 using Microsoft.Extensions.Configuration;
@@ -8,12 +9,9 @@ namespace Univoting.ConsoleClient
 {
     class Program
     {
-        private static IConfiguration _configuration;
+        static  GrpcChannel _channel;
 
-        public Program(IConfiguration configuration)
-        {
-            _configuration = configuration;
-        }
+      
         private static LiveViewService.LiveViewServiceClient _liveViewService;
         private static voteCountResult _positionCount=null;
         private static voteCountResult _positionSkippedCount=null;
@@ -23,17 +21,22 @@ namespace Univoting.ConsoleClient
             get
             {
                 if (_liveViewService != null) return _liveViewService;
-                var channel = GrpcChannel.ForAddress(_configuration.GetValue<string>("ServerAddress"));
-                _liveViewService = new Univoting.Services.LiveViewService.LiveViewServiceClient(channel);
+                _liveViewService = new Univoting.Services.LiveViewService.LiveViewServiceClient(_channel);
                 return _liveViewService;
             }
 
         }
         static async Task Main(string[] args)
         {
+            IConfiguration configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", true, true)
+                .Build();
+
+            _channel = GrpcChannel.ForAddress(configuration.GetValue<string>("ServerAddress"));
             var positionsResult =await LiveViewServiceClient.GetAllPositionsAsync(new GetAllPositionsRequest
             {
-                ElectionId = ""
+                ElectionId = "3f8e6896-4c7d-15f5-a018-75d8bd200d7c"
             });
 
 
