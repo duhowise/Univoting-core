@@ -51,7 +51,7 @@ namespace Univoting.Services.Implementations
             Guid.TryParse(request.PositionId, out var positionId);
             return new voteCountResult
             {
-                Count = await _context.Votes.Where(x => x.PositionId == positionId).CountAsync()
+                Count = await _context.SkippedVotes.Where(x => x.PositionId == positionId).CountAsync()
             };
         }
     }

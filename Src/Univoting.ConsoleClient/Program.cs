@@ -33,7 +33,7 @@ namespace Univoting.ConsoleClient
                 .AddJsonFile("appsettings.json", true, true)
                 .Build();
 
-            _channel = GrpcChannel.ForAddress(configuration.GetValue<string>("ServerAddress"));
+            _channel = GrpcChannel.ForAddress(configuration["ServerAddress"] ?? "https://localhost:5001");
             var positionsResult =await LiveViewServiceClient.GetAllPositionsAsync(new GetAllPositionsRequest
             {
                 ElectionId = "3f8e6896-4c7d-15f5-a018-75d8bd200d7c"
