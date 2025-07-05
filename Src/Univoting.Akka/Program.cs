@@ -65,20 +65,20 @@ class Program
             var supervisor = requiredActor.ActorRef;
 
             // Demo the voting system
-            Console.WriteLine("Choose demo type:");
-            Console.WriteLine("1. Basic Demo (original)");
-            Console.WriteLine("2. Enhanced Demo (comprehensive)");
-            Console.Write("Enter choice (1 or 2): ");
-            
-            var choice = Console.ReadLine();
-            if (choice == "2")
-            {
-                await EnhancedVotingDemo.RunEnhancedDemo(supervisor);
-            }
-            else
-            {
+            // Console.WriteLine("Choose demo type:");
+            // Console.WriteLine("1. Basic Demo (original)");
+            // Console.WriteLine("2. Enhanced Demo (comprehensive)");
+            // Console.Write("Enter choice (1 or 2): ");
+            //
+            // var choice = Console.ReadLine();
+            // if (choice == "2")
+            // {
+            //     await EnhancedVotingDemo.RunEnhancedDemo(supervisor);
+            // }
+            // else
+            // {
                 await DemoVotingSystem(supervisor);
-            }
+            // }
             
             Console.WriteLine("Press any key to exit...");
             Console.ReadKey();
@@ -91,27 +91,39 @@ class Program
     {
         try
         {
-            var electionId = "election-2024";
+            var electionId = "b44e3646-75c8-4680-bba8-731bc0aba2d8";
             
             Console.WriteLine("=== Univoting Akka.NET Demo ===");
             
-            // 1. Create Election
+            // 1. Create Election (idempotent)
             Console.WriteLine("1. Creating election...");
-            var createResult = await supervisor.Ask<object>(
-                new CreateElection(electionId, "University Student Elections 2024", 
-                    "Annual student body elections", null, "#0066CC"), TimeSpan.FromSeconds(10));
             
-            if (createResult is Status.Success)
+            // Check if election already exists
+            var existingElection = await supervisor.Ask<object>(
+                new GetElection(electionId), TimeSpan.FromSeconds(5));
+            
+            if (existingElection is not Status.Failure)
             {
-                Console.WriteLine("✓ Election created successfully");
+                Console.WriteLine("✓ Election already exists, skipping creation");
             }
             else
             {
-                Console.WriteLine($"✗ Failed to create election: {createResult}");
-                return;
+                var createResult = await supervisor.Ask<object>(
+                    new CreateElection(electionId, "University Student Elections 2024", 
+                        "Annual student body elections", null, "#0066CC"), TimeSpan.FromSeconds(10));
+                
+                if (createResult is Status.Success)
+                {
+                    Console.WriteLine("✓ Election created successfully");
+                }
+                else
+                {
+                    Console.WriteLine($"✗ Failed to create election: {createResult}");
+                    return;
+                }
             }
 
-            // 2. Add Positions
+            // 2. Add Positions (idempotent)
             Console.WriteLine("\n2. Adding positions...");
             var positions = new[]
             {
@@ -122,6 +134,16 @@ class Program
 
             foreach (var pos in positions)
             {
+                // Check if position already exists
+                var existingPosition = await supervisor.Ask<object>(
+                    new GetPosition(pos.Id), TimeSpan.FromSeconds(5));
+                
+                if (existingPosition is not Status.Failure)
+                {
+                    Console.WriteLine($"✓ Position already exists: {pos.Name}");
+                    continue;
+                }
+                
                 var posResult = await supervisor.Ask<object>(
                     new AddPosition(electionId, pos.Id, pos.Name, pos.Priority), 
                     TimeSpan.FromSeconds(5));
@@ -136,7 +158,7 @@ class Program
                 }
             }
 
-            // 3. Add Candidates
+            // 3. Add Candidates (idempotent)
             Console.WriteLine("\n3. Adding candidates...");
             var candidates = new[]
             {
@@ -148,6 +170,16 @@ class Program
 
             foreach (var candidate in candidates)
             {
+                // Check if candidate already exists
+                var existingCandidate = await supervisor.Ask<object>(
+                    new GetCandidate(candidate.Id), TimeSpan.FromSeconds(5));
+                
+                if (existingCandidate is not Status.Failure)
+                {
+                    Console.WriteLine($"✓ Candidate already exists: {candidate.FirstName} {candidate.LastName}");
+                    continue;
+                }
+                
                 var candResult = await supervisor.Ask<object>(
                     new AddCandidate(candidate.PositionId, candidate.Id, candidate.FirstName, 
                         candidate.LastName, null, candidate.Priority), 
@@ -163,7 +195,7 @@ class Program
                 }
             }
 
-            // 4. Register Voters
+            // 4. Register Voters (idempotent)
             Console.WriteLine("\n4. Registering voters...");
             var voters = new[]
             {
@@ -174,6 +206,16 @@ class Program
 
             foreach (var voter in voters)
             {
+                // Check if voter already exists
+                var existingVoter = await supervisor.Ask<object>(
+                    new GetVoter(voter.Id), TimeSpan.FromSeconds(5));
+                
+                if (existingVoter is not Status.Failure)
+                {
+                    Console.WriteLine($"✓ Voter already registered: {voter.Name}");
+                    continue;
+                }
+                
                 var voterResult = await supervisor.Ask<object>(
                     new RegisterVoter(electionId, voter.Id, voter.Name, voter.IdNumber), 
                     TimeSpan.FromSeconds(5));
