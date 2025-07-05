@@ -11,6 +11,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Univoting.Data", "Src\Univo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Univoting.ConsoleClient", "Src\Univoting.ConsoleClient\Univoting.ConsoleClient.csproj", "{DC23CEB3-696A-447B-8C18-238B9F6D450C}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Univoting.Akka", "Src\Univoting.Akka\Univoting.Akka.csproj", "{E8F4B123-4567-4890-ABC1-DEF234567890}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Univoting.Akka.Tests", "Tests\Univoting.Akka.Tests\Univoting.Akka.Tests.csproj", "{F9F4B234-5678-5901-BCD2-EFG345678901}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +37,14 @@ Global
 		{DC23CEB3-696A-447B-8C18-238B9F6D450C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DC23CEB3-696A-447B-8C18-238B9F6D450C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DC23CEB3-696A-447B-8C18-238B9F6D450C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E8F4B123-4567-4890-ABC1-DEF234567890}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8F4B123-4567-4890-ABC1-DEF234567890}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8F4B123-4567-4890-ABC1-DEF234567890}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E8F4B123-4567-4890-ABC1-DEF234567890}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F9F4B234-5678-5901-BCD2-EFG345678901}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F9F4B234-5678-5901-BCD2-EFG345678901}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F9F4B234-5678-5901-BCD2-EFG345678901}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F9F4B234-5678-5901-BCD2-EFG345678901}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
