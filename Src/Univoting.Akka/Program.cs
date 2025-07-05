@@ -91,7 +91,7 @@ class Program
     {
         try
         {
-            var electionId = "b44e3646-75c8-4680-bba8-731bc0aba2d8";
+            var electionId = Guid.NewGuid().ToString();
             
             Console.WriteLine("=== Univoting Akka.NET Demo ===");
             
@@ -99,8 +99,8 @@ class Program
             Console.WriteLine("1. Creating election...");
             
             // Check if election already exists
-            var existingElection = await supervisor.Ask<object>(
-                new GetElection(electionId), TimeSpan.FromSeconds(5));
+            var existingElection = await supervisor.Ask<Status>(
+                new GetElection(electionId));
             
             if (existingElection is not Status.Failure)
             {
@@ -127,16 +127,16 @@ class Program
             Console.WriteLine("\n2. Adding positions...");
             var positions = new[]
             {
-                new { Id = $"{electionId}-president", Name = "Student Body President", Priority = 1 },
-                new { Id = $"{electionId}-vicepresident", Name = "Vice President", Priority = 2 },
-                new { Id = $"{electionId}-secretary", Name = "Secretary", Priority = 3 }
+                new { Id = Guid.NewGuid().ToString(), Name = "Student Body President", Priority = 1 },
+                new { Id = Guid.NewGuid().ToString(), Name = "Vice President", Priority = 2 },
+                new { Id = Guid.NewGuid().ToString(), Name = "Secretary", Priority = 3 }
             };
 
             foreach (var pos in positions)
             {
                 // Check if position already exists
                 var existingPosition = await supervisor.Ask<object>(
-                    new GetPosition(pos.Id), TimeSpan.FromSeconds(5));
+                    new GetPosition(pos.Id, electionId), TimeSpan.FromSeconds(5));
                 
                 if (existingPosition is not Status.Failure)
                 {
@@ -162,10 +162,10 @@ class Program
             Console.WriteLine("\n3. Adding candidates...");
             var candidates = new[]
             {
-                new { PositionId = $"{electionId}-president", Id = "candidate-1", FirstName = "John", LastName = "Doe", Priority = 1 },
-                new { PositionId = $"{electionId}-president", Id = "candidate-2", FirstName = "Jane", LastName = "Smith", Priority = 2 },
-                new { PositionId = $"{electionId}-vicepresident", Id = "candidate-3", FirstName = "Bob", LastName = "Johnson", Priority = 1 },
-                new { PositionId = $"{electionId}-vicepresident", Id = "candidate-4", FirstName = "Alice", LastName = "Wilson", Priority = 2 }
+                new { PositionId = positions[0].Id, Id = Guid.NewGuid().ToString(), FirstName = "John", LastName = "Doe", Priority = 1 },
+                new { PositionId = positions[0].Id, Id = Guid.NewGuid().ToString(), FirstName = "Jane", LastName = "Smith", Priority = 2 },
+                new { PositionId = positions[1].Id, Id = Guid.NewGuid().ToString(), FirstName = "Bob", LastName = "Johnson", Priority = 1 },
+                new { PositionId = positions[1].Id, Id = Guid.NewGuid().ToString(), FirstName = "Alice", LastName = "Wilson", Priority = 2 }
             };
 
             foreach (var candidate in candidates)
@@ -182,7 +182,7 @@ class Program
                 
                 var candResult = await supervisor.Ask<object>(
                     new AddCandidate(candidate.PositionId, candidate.Id, candidate.FirstName, 
-                        candidate.LastName, null, candidate.Priority), 
+                        candidate.LastName, null, candidate.Priority, electionId), 
                     TimeSpan.FromSeconds(5));
                 
                 if (candResult is Status.Success)
@@ -199,9 +199,9 @@ class Program
             Console.WriteLine("\n4. Registering voters...");
             var voters = new[]
             {
-                new { Id = $"{electionId}-voter1", Name = "Student A", IdNumber = "STU001" },
-                new { Id = $"{electionId}-voter2", Name = "Student B", IdNumber = "STU002" },
-                new { Id = $"{electionId}-voter3", Name = "Student C", IdNumber = "STU003" }
+                new { Id = Guid.NewGuid().ToString(), Name = "Student A", IdNumber = "STU001" },
+                new { Id = Guid.NewGuid().ToString(), Name = "Student B", IdNumber = "STU002" },
+                new { Id = Guid.NewGuid().ToString(), Name = "Student C", IdNumber = "STU003" }
             };
 
             foreach (var voter in voters)
@@ -234,16 +234,16 @@ class Program
             Console.WriteLine("\n5. Casting votes...");
             var votes = new[]
             {
-                new { VoterId = $"{electionId}-voter1", CandidateId = "candidate-1", PositionId = $"{electionId}-president" },
-                new { VoterId = $"{electionId}-voter2", CandidateId = "candidate-2", PositionId = $"{electionId}-president" },
-                new { VoterId = $"{electionId}-voter1", CandidateId = "candidate-3", PositionId = $"{electionId}-vicepresident" },
-                new { VoterId = $"{electionId}-voter2", CandidateId = "candidate-4", PositionId = $"{electionId}-vicepresident" }
+                new { VoterId = voters[0].Id, CandidateId = candidates[0].Id, PositionId = positions[0].Id },
+                new { VoterId = voters[1].Id, CandidateId = candidates[1].Id, PositionId = positions[0].Id },
+                new { VoterId = voters[0].Id, CandidateId = candidates[2].Id, PositionId = positions[1].Id },
+                new { VoterId = voters[1].Id, CandidateId = candidates[3].Id, PositionId = positions[1].Id }
             };
 
             foreach (var vote in votes)
             {
                 var voteResult = await supervisor.Ask<object>(
-                    new CastVote(vote.VoterId, vote.CandidateId, vote.PositionId), 
+                    new CastVote(vote.VoterId, vote.CandidateId, vote.PositionId, electionId), 
                     TimeSpan.FromSeconds(5));
                 
                 if (voteResult is Status.Success)
@@ -259,7 +259,7 @@ class Program
             // 6. Skip a vote
             Console.WriteLine("\n6. Skipping a vote...");
             var skipResult = await supervisor.Ask<object>(
-                new SkipVote($"{electionId}-voter3", $"{electionId}-president"), 
+                new SkipVote(voters[2].Id, positions[0].Id, electionId), 
                 TimeSpan.FromSeconds(5));
             
             if (skipResult is Status.Success)
@@ -276,10 +276,10 @@ class Program
             foreach (var pos in positions)
             {
                 var voteCount = await supervisor.Ask<int>(
-                    new GetVoteCount(pos.Id), TimeSpan.FromSeconds(5));
+                    new GetVoteCount(pos.Id, electionId), TimeSpan.FromSeconds(5));
                 
                 var skippedCount = await supervisor.Ask<int>(
-                    new GetSkippedVoteCount(pos.Id), TimeSpan.FromSeconds(5));
+                    new GetSkippedVoteCount(pos.Id, electionId), TimeSpan.FromSeconds(5));
                 
                 Console.WriteLine($"Position: {pos.Name} - Votes: {voteCount}, Skipped: {skippedCount}");
             }

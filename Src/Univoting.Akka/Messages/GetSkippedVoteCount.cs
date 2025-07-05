@@ -1,3 +1,3 @@
 namespace Univoting.Akka.Messages;
 
-public record GetSkippedVoteCount(string PositionId) : VotingCommand;
+public record GetSkippedVoteCount(string PositionId, string ElectionId) : VotingCommand;

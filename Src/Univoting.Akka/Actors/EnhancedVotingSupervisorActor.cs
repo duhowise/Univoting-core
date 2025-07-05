@@ -187,10 +187,10 @@ public class EnhancedVotingSupervisorActor : UntypedActor
             foreach (var position in positions)
             {
                 var voteCount = await _positionsParent.Ask<int>(
-                    new GetVoteCount(position.Id.ToString()), TimeSpan.FromSeconds(5));
+                    new GetVoteCount(position.Id.ToString(),election.Id.ToString()), TimeSpan.FromSeconds(5));
                 
                 var skippedCount = await _positionsParent.Ask<int>(
-                    new GetSkippedVoteCount(position.Id.ToString()), TimeSpan.FromSeconds(5));
+                    new GetSkippedVoteCount(position.Id.ToString(), election.Id.ToString()), TimeSpan.FromSeconds(5));
                 
                 positionStats.Add(new PositionStatistics
                 {

@@ -17,6 +17,7 @@ public class PositionMessageExtractor : EntityMessageExtractor
         return message switch
         {
             AddPosition addPos => addPos.PositionId,
+            GetPosition getPos => getPos.PositionId,
             AddCandidate addCandidate => addCandidate.PositionId,
             CastVote castVote => castVote.PositionId,
             SkipVote skipVote => skipVote.PositionId,

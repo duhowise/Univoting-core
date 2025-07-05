@@ -87,6 +87,10 @@ public class ElectionActor : ReceivePersistentActor
                 HandleAddPosition(addPos);
                 break;
                 
+            case GetPosition getPos when getPos.ElectionId == _electionId && _positions.ContainsKey(getPos.PositionId):
+                HandleGetPosition(getPos);
+                break;
+                
             case GetPositionsForElection getPos when getPos.ElectionId == _electionId:
                 HandleGetPositionsForElection();
                 break;
@@ -103,11 +107,11 @@ public class ElectionActor : ReceivePersistentActor
                 HandleUpdateVoterStatus(updateStatus);
                 break;
                 
-            case CastVote castVote when ValidateVote(castVote):
+            case CastVote castVote when castVote.ElectionId == _electionId && ValidateVote(castVote):
                 HandleCastVote(castVote);
                 break;
                 
-            case SkipVote skipVote when ValidateSkipVote(skipVote):
+            case SkipVote skipVote when skipVote.ElectionId == _electionId && ValidateSkipVote(skipVote):
                 HandleSkipVote(skipVote);
                 break;
                 
@@ -119,19 +123,19 @@ public class ElectionActor : ReceivePersistentActor
                 HandleGetSkippedVotesForPosition(getSkipped);
                 break;
                 
-            case GetVoteCount getCount when _positions.Values.Any(p => p.PositionId == getCount.PositionId):
+            case GetVoteCount getCount when getCount.ElectionId == _electionId && _positions.Values.Any(p => p.PositionId == getCount.PositionId):
                 HandleGetVoteCount(getCount);
                 break;
                 
-            case GetSkippedVoteCount getSkippedCount when _positions.Values.Any(p => p.PositionId == getSkippedCount.PositionId):
+            case GetSkippedVoteCount getSkippedCount when getSkippedCount.ElectionId == _electionId && _positions.Values.Any(p => p.PositionId == getSkippedCount.PositionId):
                 HandleGetSkippedVoteCount(getSkippedCount);
                 break;
                 
-            case AddCandidate addCandidate when ValidateAddCandidate(addCandidate):
+            case AddCandidate addCandidate when addCandidate.ElectionId == _electionId && ValidateAddCandidate(addCandidate):
                 HandleAddCandidate(addCandidate);
                 break;
                 
-            case GetCandidatesForPosition getCandidates when _positions.Values.Any(p => p.PositionId == getCandidates.PositionId):
+            case GetCandidatesForPosition getCandidates when getCandidates.ElectionId == _electionId && _positions.Values.Any(p => p.PositionId == getCandidates.PositionId):
                 HandleGetCandidatesForPosition(getCandidates);
                 break;
                 
@@ -223,6 +227,31 @@ public class ElectionActor : ReceivePersistentActor
             ApplyEvent(evt);
             Sender.Tell(Status.Success.Instance);
         });
+    }
+
+    private void HandleGetPosition(GetPosition getPos)
+    {
+        if (!_initialized)
+        {
+            Sender.Tell(new Status.Failure(new InvalidOperationException("Election not found.")));
+            return;
+        }
+
+        if (!_positions.TryGetValue(getPos.PositionId, out var positionState))
+        {
+            Sender.Tell(new Status.Failure(new InvalidOperationException("Position not found.")));
+            return;
+        }
+
+        var position = new Position
+        {
+            Id = Guid.Parse(positionState.PositionId),
+            Name = positionState.Name,
+            ElectionId = Guid.Parse(_electionId),
+            Priority = new Priority { Number = positionState.Priority }
+        };
+        
+        Sender.Tell(position);
     }
 
     private void HandleGetPositionsForElection()

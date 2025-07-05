@@ -2,6 +2,7 @@ using Akka.Actor;
 using Univoting.Akka.Messages;
 using Univoting.Akka.Models;
 using Univoting.Models;
+using static System.Collections.Specialized.BitVector32;
 
 namespace Univoting.Akka;
 
@@ -115,7 +116,7 @@ public static class EnhancedVotingDemo
         {
             var candResult = await supervisor.Ask<object>(
                 new AddCandidate(candidate.PositionId, candidate.Id, candidate.FirstName, 
-                    candidate.LastName, null, candidate.Priority), 
+                    candidate.LastName, null, candidate.Priority, electionId), 
                 TimeSpan.FromSeconds(5));
             
             if (candResult is Status.Success)
@@ -238,7 +239,7 @@ public static class EnhancedVotingDemo
                     };
 
                     var voteResult = await supervisor.Ask<object>(
-                        new CastVote(pattern.VoterId, candidateId, positionId),
+                        new CastVote(pattern.VoterId, candidateId, positionId, electionId),
                         TimeSpan.FromSeconds(5));
                     
                     if (voteResult is Status.Success)
@@ -249,7 +250,7 @@ public static class EnhancedVotingDemo
                 else
                 {
                     var skipResult = await supervisor.Ask<object>(
-                        new SkipVote(pattern.VoterId, positionId),
+                        new SkipVote(pattern.VoterId, positionId, electionId),
                         TimeSpan.FromSeconds(5));
                     
                     if (skipResult is Status.Success)
@@ -299,7 +300,7 @@ public static class EnhancedVotingDemo
         {
             var positionId = $"{electionId}-{position}";
             var results = await supervisor.Ask<PositionVotingResults>(
-                new GetVotingResults(positionId),
+                new GetVotingResults(positionId, electionId),
                 TimeSpan.FromSeconds(5));
 
             Console.WriteLine($"\n   {results.PositionName}:");
@@ -323,7 +324,7 @@ public static class EnhancedVotingDemo
         // Try to vote twice (should fail)
         Console.WriteLine("\n   Testing double voting prevention...");
         var doubleVoteResult = await supervisor.Ask<object>(
-            new CastVote($"{electionId}-voter001", "pres-candidate-2", $"{electionId}-president"),
+            new CastVote($"{electionId}-voter001", "pres-candidate-2", $"{electionId}-president", electionId),
             TimeSpan.FromSeconds(5));
         
         if (doubleVoteResult is Status.Failure failure)
@@ -334,7 +335,7 @@ public static class EnhancedVotingDemo
         // Try to vote for non-existent candidate (should fail)
         Console.WriteLine("\n   Testing invalid candidate prevention...");
         var invalidCandidateResult = await supervisor.Ask<object>(
-            new CastVote($"{electionId}-voter002", "non-existent-candidate", $"{electionId}-treasurer"),
+            new CastVote($"{electionId}-voter002", "non-existent-candidate", $"{electionId}-treasurer", electionId),
             TimeSpan.FromSeconds(5));
         
         if (invalidCandidateResult is Status.Failure failure2)
@@ -345,7 +346,7 @@ public static class EnhancedVotingDemo
         // Try to skip after voting (should fail)
         Console.WriteLine("\n   Testing skip after vote prevention...");
         var skipAfterVoteResult = await supervisor.Ask<object>(
-            new SkipVote($"{electionId}-voter001", $"{electionId}-president"),
+            new SkipVote($"{electionId}-voter001", $"{electionId}-president", electionId),
             TimeSpan.FromSeconds(5));
         
         if (skipAfterVoteResult is Status.Failure failure3)

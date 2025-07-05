@@ -45,6 +45,10 @@ public class PositionActor : ReceivePersistentActor
                 HandleAddPosition(addPos);
                 break;
                 
+            case GetPosition getPos when getPos.PositionId == _positionId:
+                HandleGetPosition();
+                break;
+                
             case AddCandidate addCandidate when addCandidate.PositionId == _positionId:
                 HandleAddCandidate(addCandidate);
                 break;
@@ -99,6 +103,25 @@ public class PositionActor : ReceivePersistentActor
             ApplyEvent(evt);
             Sender.Tell(Status.Success.Instance);
         });
+    }
+
+    private void HandleGetPosition()
+    {
+        if (!_initialized)
+        {
+            Sender.Tell(new Status.Failure(new InvalidOperationException("Position not found.")));
+            return;
+        }
+
+        var position = new Position
+        {
+            Id = Guid.Parse(_positionId),
+            Name = _name,
+            ElectionId = Guid.Parse(_electionId),
+            Priority = new Priority { Number = _priority }
+        };
+        
+        Sender.Tell(position);
     }
 
     private void HandleAddCandidate(AddCandidate addCandidate)

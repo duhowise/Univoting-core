@@ -62,14 +62,14 @@ public class ElectionActorTests : TestKit
         ExpectMsg<Status.Success>();
         
         // Add Candidate
-        parent.Tell(new AddCandidate(positionId, candidateId, "John", "Doe", null, 1));
+        parent.Tell(new AddCandidate(positionId, candidateId, "John", "Doe", null, 1,electionId));
         ExpectMsg<Status.Success>();
         
         // Verify candidates for position
-        parent.Tell(new GetCandidatesForPosition(positionId));
+        parent.Tell(new GetCandidatesForPosition(positionId, electionId));
         var candidates = ExpectMsg<List<Candidate>>();
         
-        Assert.Single(candidates);
+        Assert.Single(candidates, electionId);
         Assert.Equal("John", candidates[0].FirstName);
         Assert.Equal("Doe", candidates[0].LastName);
     }
@@ -91,7 +91,7 @@ public class ElectionActorTests : TestKit
         parent.Tell(new AddPosition(electionId, positionId, "President", 1));
         ExpectMsg<Status.Success>();
         
-        parent.Tell(new AddCandidate(positionId, candidateId, "John", "Doe", null, 1));
+        parent.Tell(new AddCandidate(positionId, candidateId, "John", "Doe", null, 1, electionId));
         ExpectMsg<Status.Success>();
         
         // Act & Assert - Register Voter
@@ -99,11 +99,11 @@ public class ElectionActorTests : TestKit
         ExpectMsg<Status.Success>();
         
         // Cast Vote
-        parent.Tell(new CastVote(voterId, candidateId, positionId));
+        parent.Tell(new CastVote(voterId, candidateId, positionId, electionId));
         ExpectMsg<Status.Success>();
         
         // Verify vote count
-        parent.Tell(new GetVoteCount(positionId));
+        parent.Tell(new GetVoteCount(positionId, electionId));
         var voteCount = ExpectMsg<int>();
         Assert.Equal(1, voteCount);
     }
@@ -128,11 +128,11 @@ public class ElectionActorTests : TestKit
         ExpectMsg<Status.Success>();
         
         // Act & Assert - Skip Vote
-        parent.Tell(new SkipVote(voterId, positionId));
+        parent.Tell(new SkipVote(voterId, positionId, electionId));
         ExpectMsg<Status.Success>();
         
         // Verify skipped vote count
-        parent.Tell(new GetSkippedVoteCount(positionId));
+        parent.Tell(new GetSkippedVoteCount(positionId, electionId));
         var skippedCount = ExpectMsg<int>();
         Assert.Equal(1, skippedCount);
     }
@@ -154,22 +154,22 @@ public class ElectionActorTests : TestKit
         parent.Tell(new AddPosition(electionId, positionId, "President", 1));
         ExpectMsg<Status.Success>();
         
-        parent.Tell(new AddCandidate(positionId, candidateId, "John", "Doe", null, 1));
+        parent.Tell(new AddCandidate(positionId, candidateId, "John", "Doe", null, 1, electionId));
         ExpectMsg<Status.Success>();
         
         parent.Tell(new RegisterVoter(electionId, voterId, "Test Voter", "ID123"));
         ExpectMsg<Status.Success>();
         
         // Cast first vote
-        parent.Tell(new CastVote(voterId, candidateId, positionId));
+        parent.Tell(new CastVote(voterId, candidateId, positionId, electionId));
         ExpectMsg<Status.Success>();
         
         // Act & Assert - Try to cast duplicate vote
-        parent.Tell(new CastVote(voterId, candidateId, positionId));
+        parent.Tell(new CastVote(voterId, candidateId, positionId, electionId));
         ExpectNoMsg(TimeSpan.FromSeconds(1)); // Should be ignored due to validation
         
         // Verify vote count is still 1
-        parent.Tell(new GetVoteCount(positionId));
+        parent.Tell(new GetVoteCount(positionId, electionId));
         var voteCount = ExpectMsg<int>();
         Assert.Equal(1, voteCount);
     }
@@ -197,7 +197,7 @@ public class ElectionActorTests : TestKit
         parent.Tell(new GetVotersForElection(electionId));
         var voters = ExpectMsg<List<Voter>>();
         
-        Assert.Single(voters);
+        Assert.Single(voters, electionId);
         Assert.Equal(VotingStatus.InProgress, voters[0].VotingStatus);
     }
 
