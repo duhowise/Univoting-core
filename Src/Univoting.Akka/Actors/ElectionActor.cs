@@ -11,7 +11,7 @@ public class ElectionActor : ReceivePersistentActor
 {
     private const int SnapshotInterval = 50;
     
-    private readonly string _electionId;
+    private readonly Guid _electionId;
     private string _name = string.Empty;
     private string _description = string.Empty;
     private byte[]? _logo;
@@ -25,9 +25,9 @@ public class ElectionActor : ReceivePersistentActor
     private readonly Dictionary<string, DepartmentState> _departments = new();
     private readonly Dictionary<string, PollingStationState> _pollingStations = new();
 
-    public override string PersistenceId => _electionId;
+    public override string PersistenceId => _electionId.ToString();
 
-    public ElectionActor(string electionId)
+    public ElectionActor(Guid electionId)
     {
         _electionId = electionId;
         
@@ -69,6 +69,13 @@ public class ElectionActor : ReceivePersistentActor
 
     private void HandleCommand(VotingCommand cmd)
     {
+        // Add validation for all commands
+        if (cmd == null)
+        {
+            Sender.Tell(new Status.Failure(new ArgumentNullException(nameof(cmd))));
+            return;
+        }
+
         switch (cmd)
         {
             case CreateElection create when create.ElectionId == _electionId:
@@ -83,7 +90,7 @@ public class ElectionActor : ReceivePersistentActor
                 HandleUpdateElection(update);
                 break;
                 
-            case AddPosition addPos when _initialized:
+            case AddPosition addPos when addPos.ElectionId == _electionId && _initialized:
                 HandleAddPosition(addPos);
                 break;
                 
@@ -115,11 +122,11 @@ public class ElectionActor : ReceivePersistentActor
                 HandleSkipVote(skipVote);
                 break;
                 
-            case GetVotesForPosition getVotes when _positions.Values.Any(p => p.PositionId == getVotes.PositionId):
+            case GetVotesForPosition getVotes when getVotes.ElectionId == _electionId && _positions.Values.Any(p => p.PositionId == getVotes.PositionId):
                 HandleGetVotesForPosition(getVotes);
                 break;
                 
-            case GetSkippedVotesForPosition getSkipped when _positions.Values.Any(p => p.PositionId == getSkipped.PositionId):
+            case GetSkippedVotesForPosition getSkipped when getSkipped.ElectionId == _electionId && _positions.Values.Any(p => p.PositionId == getSkipped.PositionId):
                 HandleGetSkippedVotesForPosition(getSkipped);
                 break;
                 
@@ -139,6 +146,14 @@ public class ElectionActor : ReceivePersistentActor
                 HandleGetCandidatesForPosition(getCandidates);
                 break;
                 
+            case GetCandidate getCandidate when getCandidate.ElectionId == _electionId:
+                HandleGetCandidate(getCandidate);
+                break;
+                
+            case GetVoter getVoter when getVoter.ElectionId == _electionId:
+                HandleGetVoter(getVoter);
+                break;
+                
             case AddModerator addMod when addMod.ElectionId == _electionId:
                 HandleAddModerator(addMod);
                 break;
@@ -152,14 +167,22 @@ public class ElectionActor : ReceivePersistentActor
                 break;
                 
             default:
-                if (!_initialized)
+                // Provide specific error messages for common misrouting issues
+                var errorMessage = cmd switch
                 {
-                    Sender.Tell(new Status.Failure(new InvalidOperationException("Election not created.")));
-                }
-                else
-                {
-                    Unhandled(cmd);
-                }
+                    CreateElection create when create.ElectionId != _electionId => 
+                        $"Command for election {create.ElectionId} sent to actor {_electionId}",
+                    AddPosition addPos when !_initialized => 
+                        "Cannot add position: Election not initialized",
+                    CastVote castVote when castVote.ElectionId != _electionId => 
+                        $"Vote for election {castVote.ElectionId} sent to actor {_electionId}",
+                    _ when !_initialized => 
+                        "Election not created.",
+                    _ => 
+                        $"Unhandled command type: {cmd.GetType().Name}"
+                };
+                
+                Sender.Tell(new Status.Failure(new InvalidOperationException(errorMessage)));
                 break;
         }
     }
@@ -189,7 +212,7 @@ public class ElectionActor : ReceivePersistentActor
 
         var election = new Election
         {
-            Id = Guid.Parse(_electionId),
+            Id = _electionId,
             Name = _name,
             Description = _description,
             Logo = _logo,
@@ -247,7 +270,7 @@ public class ElectionActor : ReceivePersistentActor
         {
             Id = Guid.Parse(positionState.PositionId),
             Name = positionState.Name,
-            ElectionId = Guid.Parse(_electionId),
+            ElectionId =_electionId,
             Priority = new Priority { Number = positionState.Priority }
         };
         
@@ -260,7 +283,7 @@ public class ElectionActor : ReceivePersistentActor
         {
             Id = Guid.Parse(p.PositionId),
             Name = p.Name,
-            ElectionId = Guid.Parse(_electionId)
+            ElectionId =_electionId
         }).ToList();
         
         Sender.Tell(positions);
@@ -289,7 +312,7 @@ public class ElectionActor : ReceivePersistentActor
             Name = v.Name,
             IdentificationNumber = v.IdentificationNumber,
             VotingStatus = v.Status,
-            ElectionId = Guid.Parse(_electionId)
+            ElectionId =_electionId
         }).ToList();
         
         Sender.Tell(voters);
@@ -443,7 +466,7 @@ public class ElectionActor : ReceivePersistentActor
                 LastName = c.LastName,
                 Picture = c.Picture,
                 PositionId = Guid.Parse(getCandidates.PositionId),
-                ElectionId = Guid.Parse(_electionId)
+                ElectionId =_electionId
             }).ToList();
             
             Sender.Tell(candidates);
@@ -452,6 +475,57 @@ public class ElectionActor : ReceivePersistentActor
         {
             Sender.Tell(new List<Candidate>());
         }
+    }
+
+    private void HandleGetCandidate(GetCandidate getCandidate)
+    {
+        // Find the candidate across all positions
+        foreach (var position in _positions.Values)
+        {
+            if (position.Candidates.TryGetValue(getCandidate.CandidateId, out var candidateState))
+            {
+                var candidate = new Candidate
+                {
+                    Id = Guid.Parse(candidateState.CandidateId),
+                    FirstName = candidateState.FirstName,
+                    LastName = candidateState.LastName,
+                    Picture = candidateState.Picture,
+                    PositionId = Guid.Parse(position.PositionId),
+                    ElectionId = _electionId
+                };
+                
+                Sender.Tell(candidate);
+                return;
+            }
+        }
+        
+        Sender.Tell(new Status.Failure(new InvalidOperationException("Candidate not found.")));
+    }
+
+    private void HandleGetVoter(GetVoter getVoter)
+    {
+        if (!_initialized)
+        {
+            Sender.Tell(new Status.Failure(new InvalidOperationException("Election not found.")));
+            return;
+        }
+
+        if (!_voters.TryGetValue(getVoter.VoterId, out var voterState))
+        {
+            Sender.Tell(new Status.Failure(new InvalidOperationException("Voter not found.")));
+            return;
+        }
+
+        var voter = new Voter
+        {
+            Id = Guid.Parse(voterState.VoterId),
+            Name = voterState.Name,
+            IdentificationNumber = voterState.IdentificationNumber,
+            VotingStatus = voterState.Status,
+            ElectionId = _electionId
+        };
+        
+        Sender.Tell(voter);
     }
 
     private void HandleAddModerator(AddModerator addMod)

@@ -4,7 +4,7 @@ namespace Univoting.Akka.Actors.Snapshots;
 
 public class ElectionSnapshot
 {
-    public string ElectionId { get; set; } = string.Empty;
+    public Guid ElectionId { get; set; } = Guid.Empty;
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public byte[]? Logo { get; set; }

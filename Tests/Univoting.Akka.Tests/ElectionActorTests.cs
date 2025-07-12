@@ -1,5 +1,4 @@
 using Akka.Actor;
-using Akka.Bank.Console.Utility;
 using Akka.TestKit.Xunit2;
 using Univoting.Akka.Actors;
 using Univoting.Akka.Actors.MessageExtractors;

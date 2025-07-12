@@ -1,3 +1,3 @@
 namespace Univoting.Akka.Messages;
 
-public record PollingStationAdded(string ElectionId, string PollingStationId, string Name) : VotingEvent;
+public record PollingStationAdded(Guid ElectionId, string PollingStationId, string Name) : VotingEvent;

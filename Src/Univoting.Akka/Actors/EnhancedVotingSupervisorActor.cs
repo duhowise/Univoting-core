@@ -1,5 +1,5 @@
 using Akka.Actor;
-using Akka.Bank.Console.Utility;
+using Univoting.Akka.Utility;
 using Univoting.Akka.Messages;
 using Univoting.Akka.Models;
 using Univoting.Akka.Actors.MessageExtractors;
@@ -13,6 +13,10 @@ namespace Univoting.Akka.Actors;
 /// </summary>
 public class EnhancedVotingSupervisorActor : UntypedActor
 {
+    // Internal coordination messages
+    private record EligibilityChecked(CastVote CastVote, VoterEligibilityResult EligibilityResult, IActorRef OriginalSender);
+    private record SkipEligibilityChecked(SkipVote SkipVote, VoterEligibilityResult EligibilityResult, IActorRef OriginalSender);
+    
     private readonly IActorRef _electionsParent;
     private readonly IActorRef _positionsParent;
     private readonly IActorRef _votersParent;
@@ -23,7 +27,7 @@ public class EnhancedVotingSupervisorActor : UntypedActor
         _electionsParent = Context.ActorOf(
             GenericChildPerEntityParent.Props(
                 new ElectionMessageExtractor(),
-                id => Props.Create(() => new ElectionActor(id))
+                id => Props.Create(() => new ElectionActor(Guid.Parse(id)))
             ),
             "elections-parent");
 
@@ -46,7 +50,16 @@ public class EnhancedVotingSupervisorActor : UntypedActor
     {
         switch (message)
         {
-            // Election-related commands
+            // Internal coordination messages
+            case EligibilityChecked eligibilityChecked:
+                HandleEligibilityChecked(eligibilityChecked);
+                break;
+                
+            case SkipEligibilityChecked skipEligibilityChecked:
+                HandleSkipEligibilityChecked(skipEligibilityChecked);
+                break;
+            
+            // Election-only commands
             case CreateElection:
             case GetElection:
             case UpdateElection:
@@ -55,22 +68,27 @@ public class EnhancedVotingSupervisorActor : UntypedActor
             case AddPollingStation:
             case GetPositionsForElection:
             case GetVotersForElection:
+            case RegisterVoter:
+            case UpdateVoterStatus:
                 _electionsParent.Forward(message);
                 break;
 
-            // Position-related commands
+            // Position-specific commands (route to position actors)
             case AddPosition:
+            case GetPosition:
             case AddCandidate:
-            case GetVoteCount:
-            case GetSkippedVoteCount:
             case GetCandidatesForPosition:
             case GetVotingResults:
                 _positionsParent.Forward(message);
                 break;
+                
+            // Vote counting (can be handled by either, but let's route to positions for consistency)
+            case GetVoteCount:
+            case GetSkippedVoteCount:
+                _positionsParent.Forward(message);
+                break;
 
-            // Voter-related commands
-            case RegisterVoter:
-            case UpdateVoterStatus:
+            // Voter-specific commands
             case GetVoter:
             case CheckVoterEligibility:
             case GetVoterHistory:
@@ -102,122 +120,116 @@ public class EnhancedVotingSupervisorActor : UntypedActor
     {
         var sender = Sender;
         
-        // First check voter eligibility
+        // First check voter eligibility using proper actor pattern
         _votersParent.Ask<VoterEligibilityResult>(
                 new CheckVoterEligibility(castVote.VoterId, castVote.PositionId), 
                 TimeSpan.FromSeconds(5))
-            .ContinueWith(eligibilityTask =>
-            {
-                if (eligibilityTask.Result.IsEligible)
-                {
-                    // If eligible, forward to position actor
-                    _positionsParent.Ask<object>(castVote, TimeSpan.FromSeconds(10))
-                        .ContinueWith(voteTask =>
-                        {
-                            if (voteTask.Result is Status.Success)
-                            {
-                                sender.Tell(Status.Success.Instance);
-                            }
-                            else
-                            {
-                                sender.Tell(voteTask.Result);
-                            }
-                        });
-                }
-                else
-                {
-                    sender.Tell(new Status.Failure(new InvalidOperationException(eligibilityTask.Result.Reason)));
-                }
-            });
+            .PipeTo(Self, sender, 
+                success: eligibilityResult => new EligibilityChecked(castVote, eligibilityResult, sender),
+                failure: ex => new Status.Failure(ex));
+    }
+    
+    private void HandleEligibilityChecked(EligibilityChecked message)
+    {
+        if (message.EligibilityResult.IsEligible)
+        {
+            // If eligible, forward to position actor
+            _positionsParent.Ask<object>(message.CastVote, TimeSpan.FromSeconds(10))
+                .PipeTo(message.OriginalSender);
+        }
+        else
+        {
+            message.OriginalSender.Tell(new Status.Failure(
+                new InvalidOperationException(message.EligibilityResult.Reason)));
+        }
     }
 
     private void HandleSkipVote(SkipVote skipVote)
     {
         var sender = Sender;
         
-        // First check voter eligibility
+        // First check voter eligibility using proper actor pattern
         _votersParent.Ask<VoterEligibilityResult>(
                 new CheckVoterEligibility(skipVote.VoterId, skipVote.PositionId), 
                 TimeSpan.FromSeconds(5))
-            .ContinueWith(eligibilityTask =>
-            {
-                if (eligibilityTask.Result.IsEligible)
-                {
-                    // If eligible, forward to position actor
-                    _positionsParent.Ask<object>(skipVote, TimeSpan.FromSeconds(10))
-                        .ContinueWith(skipTask =>
-                        {
-                            if (skipTask.Result is Status.Success)
-                            {
-                                sender.Tell(Status.Success.Instance);
-                            }
-                            else
-                            {
-                                sender.Tell(skipTask.Result);
-                            }
-                        });
-                }
-                else
-                {
-                    sender.Tell(new Status.Failure(new InvalidOperationException(eligibilityTask.Result.Reason)));
-                }
-            });
+            .PipeTo(Self, sender, 
+                success: eligibilityResult => new SkipEligibilityChecked(skipVote, eligibilityResult, sender),
+                failure: ex => new Status.Failure(ex));
+    }
+    
+    private void HandleSkipEligibilityChecked(SkipEligibilityChecked message)
+    {
+        if (message.EligibilityResult.IsEligible)
+        {
+            // If eligible, forward to position actor
+            _positionsParent.Ask<object>(message.SkipVote, TimeSpan.FromSeconds(10))
+                .PipeTo(message.OriginalSender);
+        }
+        else
+        {
+            message.OriginalSender.Tell(new Status.Failure(
+                new InvalidOperationException(message.EligibilityResult.Reason)));
+        }
     }
 
-    private async void HandleGetElectionStatistics(GetElectionStatistics getStats)
+    private void HandleGetElectionStatistics(GetElectionStatistics getStats)
     {
-        try
+        var sender = Sender;
+        
+        // Use Task.Run with proper return type for PipeTo
+        Task.Run(async () =>
         {
-            var sender = Sender;
-            
-            // Get election info
-            var election = await _electionsParent.Ask<Election>(
-                new GetElection(getStats.ElectionId), TimeSpan.FromSeconds(10));
-            
-            // Get positions
-            var positions = await _electionsParent.Ask<List<Position>>(
-                new GetPositionsForElection(getStats.ElectionId), TimeSpan.FromSeconds(10));
-            
-            // Get voters
-            var voters = await _electionsParent.Ask<List<Voter>>(
-                new GetVotersForElection(getStats.ElectionId), TimeSpan.FromSeconds(10));
-            
-            // Get vote counts for each position
-            var positionStats = new List<PositionStatistics>();
-            foreach (var position in positions)
+            try
             {
-                var voteCount = await _positionsParent.Ask<int>(
-                    new GetVoteCount(position.Id.ToString(),election.Id.ToString()), TimeSpan.FromSeconds(5));
+                // Get election info
+                var election = await _electionsParent.Ask<Election>(
+                    new GetElection(getStats.ElectionId), TimeSpan.FromSeconds(10));
                 
-                var skippedCount = await _positionsParent.Ask<int>(
-                    new GetSkippedVoteCount(position.Id.ToString(), election.Id.ToString()), TimeSpan.FromSeconds(5));
+                // Get positions
+                var positions = await _electionsParent.Ask<List<Position>>(
+                    new GetPositionsForElection(getStats.ElectionId), TimeSpan.FromSeconds(10));
                 
-                positionStats.Add(new PositionStatistics
+                // Get voters
+                var voters = await _electionsParent.Ask<List<Voter>>(
+                    new GetVotersForElection(getStats.ElectionId), TimeSpan.FromSeconds(10));
+                
+                // Get vote counts for each position
+                var positionStats = new List<PositionStatistics>();
+                foreach (var position in positions)
                 {
-                    PositionId = position.Id.ToString(),
-                    PositionName = position.Name,
-                    VoteCount = voteCount,
-                    SkippedCount = skippedCount,
-                    TotalParticipation = voteCount + skippedCount
-                });
+                    var voteCount = await _positionsParent.Ask<int>(
+                        new GetVoteCount(position.Id.ToString(), election.Id), TimeSpan.FromSeconds(5));
+                    
+                    var skippedCount = await _positionsParent.Ask<int>(
+                        new GetSkippedVoteCount(position.Id.ToString(), election.Id), TimeSpan.FromSeconds(5));
+                    
+                    positionStats.Add(new PositionStatistics
+                    {
+                        PositionId = position.Id.ToString(),
+                        PositionName = position.Name,
+                        VoteCount = voteCount,
+                        SkippedCount = skippedCount,
+                        TotalParticipation = voteCount + skippedCount
+                    });
+                }
+                
+                var statistics = new ElectionStatistics
+                {
+                    ElectionId = getStats.ElectionId,
+                    ElectionName = election.Name,
+                    TotalVoters = voters.Count,
+                    TotalPositions = positions.Count,
+                    PositionStatistics = positionStats,
+                    OverallParticipationRate = CalculateOverallParticipationRate(voters.Count, positionStats)
+                };
+                
+                sender.Tell(statistics);
             }
-            
-            var statistics = new ElectionStatistics
+            catch (Exception ex)
             {
-                ElectionId = getStats.ElectionId,
-                ElectionName = election.Name,
-                TotalVoters = voters.Count,
-                TotalPositions = positions.Count,
-                PositionStatistics = positionStats,
-                OverallParticipationRate = CalculateOverallParticipationRate(voters.Count, positionStats)
-            };
-            
-            sender.Tell(statistics);
-        }
-        catch (Exception ex)
-        {
-            Sender.Tell(new Status.Failure(ex));
-        }
+                sender.Tell(new Status.Failure(ex));
+            }
+        });
     }
 
     private double CalculateOverallParticipationRate(int totalVoters, List<PositionStatistics> positionStats)

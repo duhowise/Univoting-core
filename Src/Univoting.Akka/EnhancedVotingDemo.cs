@@ -15,7 +15,7 @@ public static class EnhancedVotingDemo
     {
         try
         {
-            var electionId = "university-2024";
+            var electionId = Guid.NewGuid();
             
             Console.WriteLine("=== Enhanced Univoting Akka.NET Demo ===");
             Console.WriteLine("Demonstrating Event Sourcing, Actor Model, and Domain-Driven Design\n");
@@ -60,7 +60,7 @@ public static class EnhancedVotingDemo
         }
     }
 
-    private static async Task CreateElectionWithFullSetup(IActorRef supervisor, string electionId)
+    private static async Task CreateElectionWithFullSetup(IActorRef supervisor, Guid electionId)
     {
         // Create Election
         var createResult = await supervisor.Ask<object>(
@@ -149,7 +149,7 @@ public static class EnhancedVotingDemo
         Console.WriteLine($"✓ Election setup complete with {positions.Length} positions, {candidates.Length} candidates, {departments.Length} departments, and {moderators.Length} moderators");
     }
 
-    private static async Task DemonstrateVoterManagement(IActorRef supervisor, string electionId)
+    private static async Task DemonstrateVoterManagement(IActorRef supervisor, Guid electionId)
     {
         // Register diverse group of voters
         var voters = new[]
@@ -186,7 +186,7 @@ public static class EnhancedVotingDemo
         Console.WriteLine($"✓ Voter001 eligibility for President: {eligibility.IsEligible} - {eligibility.Reason}");
     }
 
-    private static async Task DemonstrateVotingProcess(IActorRef supervisor, string electionId)
+    private static async Task DemonstrateVotingProcess(IActorRef supervisor, Guid electionId)
     {
         var positions = new[] { "president", "vicepresident", "secretary", "treasurer" };
         var candidateChoices = new Dictionary<string, string>
@@ -271,7 +271,7 @@ public static class EnhancedVotingDemo
         }
     }
 
-    private static async Task DemonstrateStatisticsAndMonitoring(IActorRef supervisor, string electionId)
+    private static async Task DemonstrateStatisticsAndMonitoring(IActorRef supervisor, Guid electionId)
     {
         // Get comprehensive election statistics
         var stats = await supervisor.Ask<ElectionStatistics>(
@@ -317,7 +317,7 @@ public static class EnhancedVotingDemo
         }
     }
 
-    private static async Task DemonstrateBusinessRules(IActorRef supervisor, string electionId)
+    private static async Task DemonstrateBusinessRules(IActorRef supervisor, Guid electionId)
     {
         Console.WriteLine("🔒 Testing Business Rule Enforcement:");
         
@@ -363,7 +363,7 @@ public static class EnhancedVotingDemo
         Console.WriteLine($"   ✓ Eligibility check: {eligibility.IsEligible} - {eligibility.Reason}");
     }
 
-    private static async Task DemonstrateEventSourcing(IActorRef supervisor, string electionId)
+    private static async Task DemonstrateEventSourcing(IActorRef supervisor, Guid electionId)
     {
         Console.WriteLine("📚 Event Sourcing & Audit Trail Capabilities:");
         

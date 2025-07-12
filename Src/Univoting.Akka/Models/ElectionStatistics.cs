@@ -2,7 +2,7 @@ namespace Univoting.Akka.Models;
 
 public class ElectionStatistics
 {
-    public string ElectionId { get; set; } = string.Empty;
+    public Guid ElectionId { get; set; } =Guid.Empty;
     public string ElectionName { get; set; } = string.Empty;
     public int TotalVoters { get; set; }
     public int TotalPositions { get; set; }

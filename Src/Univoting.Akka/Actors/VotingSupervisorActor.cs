@@ -1,10 +1,16 @@
 using Akka.Actor;
-using Akka.Bank.Console.Utility;
+using Univoting.Akka.Utility;
 using Univoting.Akka.Messages;
 using Univoting.Akka.Actors.MessageExtractors;
 
 namespace Univoting.Akka.Actors;
 
+/// <summary>
+/// Simple voting supervisor actor.
+/// DEPRECATED: Use EnhancedVotingSupervisorActor for new implementations.
+/// This actor routes all commands to ElectionActor instances only.
+/// </summary>
+[Obsolete("Use EnhancedVotingSupervisorActor for better separation of concerns and scalability")]
 public class VotingSupervisorActor : UntypedActor
 {
     private readonly IActorRef _electionsParent;
@@ -14,7 +20,7 @@ public class VotingSupervisorActor : UntypedActor
         _electionsParent = Context.ActorOf(
             GenericChildPerEntityParent.Props(
                 new ElectionMessageExtractor(),
-                id => Props.Create(() => new ElectionActor(id))
+                id => Props.Create(() => new ElectionActor(Guid.Parse(id)))
             ),
             "elections-parent");
     }

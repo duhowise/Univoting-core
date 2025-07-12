@@ -1,3 +1,3 @@
 namespace Univoting.Akka.Messages;
 
-public record GetVotesForPosition(string PositionId) : VotingCommand;
+public record GetVotesForPosition(string PositionId, Guid ElectionId) : VotingCommand;

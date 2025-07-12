@@ -16,15 +16,23 @@ public class PositionMessageExtractor : EntityMessageExtractor
     {
         return message switch
         {
+            // Position management
             AddPosition addPos => addPos.PositionId,
             GetPosition getPos => getPos.PositionId,
+            
+            // Candidate management
             AddCandidate addCandidate => addCandidate.PositionId,
+            GetCandidatesForPosition getCandidates => getCandidates.PositionId,
+            
+            // Voting operations
             CastVote castVote => castVote.PositionId,
             SkipVote skipVote => skipVote.PositionId,
+            
+            // Vote counting and results
             GetVoteCount getCount => getCount.PositionId,
             GetSkippedVoteCount getSkippedCount => getSkippedCount.PositionId,
-            GetCandidatesForPosition getCandidates => getCandidates.PositionId,
             GetVotingResults getResults => getResults.PositionId,
+            
             _ => null
         };
     }

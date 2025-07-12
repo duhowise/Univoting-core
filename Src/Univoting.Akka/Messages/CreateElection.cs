@@ -1,3 +1,3 @@
 namespace Univoting.Akka.Messages;
 
-public record CreateElection(string ElectionId, string Name, string Description, byte[]? Logo, string? BrandColour) : VotingCommand;
+public record CreateElection(Guid ElectionId, string Name, string Description, byte[]? Logo, string? BrandColour) : VotingCommand;

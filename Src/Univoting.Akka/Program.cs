@@ -80,8 +80,8 @@ class Program
                 await DemoVotingSystem(supervisor);
             // }
             
-            Console.WriteLine("Press any key to exit...");
-            Console.ReadKey();
+            Console.WriteLine("Demo completed. Shutting down in 2 seconds...");
+            await Task.Delay(2000);
             
             await host.StopAsync();
         }
@@ -91,7 +91,7 @@ class Program
     {
         try
         {
-            var electionId = Guid.NewGuid().ToString();
+            var electionId = Guid.Parse("935f39e2-177c-4d1f-8d4d-7e1a2458e09e");
             
             Console.WriteLine("=== Univoting Akka.NET Demo ===");
             
@@ -99,15 +99,15 @@ class Program
             Console.WriteLine("1. Creating election...");
             
             // Check if election already exists
-            var existingElection = await supervisor.Ask<Status>(
-                new GetElection(electionId));
-            
-            if (existingElection is not Status.Failure)
+            try
             {
+                var existingElection = await supervisor.Ask<Election>(
+                    new GetElection(electionId), TimeSpan.FromSeconds(5));
                 Console.WriteLine("✓ Election already exists, skipping creation");
             }
-            else
+            catch (Exception)
             {
+                // Election doesn't exist, create it
                 var createResult = await supervisor.Ask<object>(
                     new CreateElection(electionId, "University Student Elections 2024", 
                         "Annual student body elections", null, "#0066CC"), TimeSpan.FromSeconds(10));
@@ -135,13 +135,16 @@ class Program
             foreach (var pos in positions)
             {
                 // Check if position already exists
-                var existingPosition = await supervisor.Ask<object>(
-                    new GetPosition(pos.Id, electionId), TimeSpan.FromSeconds(5));
-                
-                if (existingPosition is not Status.Failure)
+                try
                 {
+                    var existingPosition = await supervisor.Ask<Position>(
+                        new GetPosition(pos.Id, electionId), TimeSpan.FromSeconds(5));
                     Console.WriteLine($"✓ Position already exists: {pos.Name}");
                     continue;
+                }
+                catch (Exception)
+                {
+                    // Position doesn't exist, add it
                 }
                 
                 var posResult = await supervisor.Ask<object>(
@@ -171,13 +174,16 @@ class Program
             foreach (var candidate in candidates)
             {
                 // Check if candidate already exists
-                var existingCandidate = await supervisor.Ask<object>(
-                    new GetCandidate(candidate.Id), TimeSpan.FromSeconds(5));
-                
-                if (existingCandidate is not Status.Failure)
+                try
                 {
+                    var existingCandidate = await supervisor.Ask<Candidate>(
+                        new GetCandidate(candidate.Id, electionId), TimeSpan.FromSeconds(5));
                     Console.WriteLine($"✓ Candidate already exists: {candidate.FirstName} {candidate.LastName}");
                     continue;
+                }
+                catch (Exception)
+                {
+                    // Candidate doesn't exist, add it
                 }
                 
                 var candResult = await supervisor.Ask<object>(
@@ -207,13 +213,16 @@ class Program
             foreach (var voter in voters)
             {
                 // Check if voter already exists
-                var existingVoter = await supervisor.Ask<object>(
-                    new GetVoter(voter.Id), TimeSpan.FromSeconds(5));
-                
-                if (existingVoter is not Status.Failure)
+                try
                 {
+                    var existingVoter = await supervisor.Ask<Voter>(
+                        new GetVoter(voter.Id, electionId), TimeSpan.FromSeconds(5));
                     Console.WriteLine($"✓ Voter already registered: {voter.Name}");
                     continue;
+                }
+                catch (Exception)
+                {
+                    // Voter doesn't exist, register them
                 }
                 
                 var voterResult = await supervisor.Ask<object>(
