@@ -3,6 +3,7 @@ using Akka.Persistence;
 using Univoting.Akka.Messages;
 using Univoting.Akka.Actors.States;
 using Univoting.Akka.Actors.Snapshots;
+using Univoting.Akka.Models;
 using Univoting.Models;
 
 namespace Univoting.Akka.Actors;
@@ -164,6 +165,10 @@ public class ElectionActor : ReceivePersistentActor
                 
             case AddPollingStation addPS when addPS.ElectionId == _electionId:
                 HandleAddPollingStation(addPS);
+                break;
+                
+            case GetAllVotesForElection getAllVotes when getAllVotes.ElectionId == _electionId:
+                HandleGetAllVotesForElection();
                 break;
                 
             default:
@@ -526,6 +531,85 @@ public class ElectionActor : ReceivePersistentActor
         };
         
         Sender.Tell(voter);
+    }
+
+    private void HandleGetAllVotesForElection()
+    {
+        if (!_initialized)
+        {
+            Sender.Tell(new Status.Failure(new InvalidOperationException("Election not found.")));
+            return;
+        }
+
+        var positionVotes = new List<PositionVotes>();
+        var totalVotes = 0;
+        var totalSkippedVotes = 0;
+
+        // Process each position, ordered by priority
+        foreach (var position in _positions.Values.OrderBy(p => p.Priority))
+        {
+            var candidateVotes = new List<CandidateVotes>();
+
+            // Process each candidate in this position
+            foreach (var candidate in position.Candidates.Values.OrderBy(c => c.Priority))
+            {
+                var votesForCandidate = position.Votes.Values
+                    .Where(v => v.CandidateId == candidate.CandidateId)
+                    .Select(v => new Vote
+                    {
+                        Id = Guid.Parse(v.VoteId),
+                        VoterId = Guid.Parse(v.VoterId),
+                        CandidateId = Guid.Parse(v.CandidateId),
+                        PositionId = Guid.Parse(position.PositionId),
+                        Time = v.Time
+                    })
+                    .OrderBy(v => v.Time)
+                    .ToList();
+
+                candidateVotes.Add(new CandidateVotes
+                {
+                    CandidateId = candidate.CandidateId,
+                    CandidateName = $"{candidate.FirstName} {candidate.LastName}",
+                    VoteCount = votesForCandidate.Count,
+                    Votes = votesForCandidate
+                });
+            }
+
+            // Order candidates by vote count (descending), then by name
+            candidateVotes = candidateVotes
+                .OrderByDescending(c => c.VoteCount)
+                .ThenBy(c => c.CandidateName)
+                .ToList();
+
+            var positionTotalVotes = position.Votes.Count;
+            var positionSkippedVotes = position.SkippedVotes.Count;
+            var positionTotalParticipation = positionTotalVotes + positionSkippedVotes;
+
+            positionVotes.Add(new PositionVotes
+            {
+                PositionId = position.PositionId,
+                PositionName = position.Name,
+                Priority = position.Priority,
+                CandidateVotes = candidateVotes,
+                TotalVotesForPosition = positionTotalVotes, // Actual votes for candidates
+                SkippedVotesForPosition = positionSkippedVotes,
+                TotalParticipationForPosition = positionTotalParticipation // Total participation
+            });
+
+            totalVotes += positionTotalVotes; // Total actual votes cast
+            totalSkippedVotes += positionSkippedVotes;
+        }
+
+        var summary = new ElectionVotesSummary
+        {
+            ElectionId = _electionId,
+            ElectionName = _name,
+            PositionVotes = positionVotes,
+            TotalVotes = totalVotes,
+            TotalSkippedVotes = totalSkippedVotes
+        };
+
+        Sender.Tell(summary);
     }
 
     private void HandleAddModerator(AddModerator addMod)

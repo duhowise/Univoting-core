@@ -60,6 +60,7 @@ public class ElectionMessageExtractor : EntityMessageExtractor, IMessageExtracto
             // Statistics and results
             GetElectionStatistics getStats => getStats.ElectionId.ToString(),
             GetVotingResults getResults => getResults.ElectionId.ToString(),
+            GetAllVotesForElection getAllVotes => getAllVotes.ElectionId.ToString(),
             GetVoterHistory getHistory => ExtractElectionIdFromVoterId(getHistory.VoterId),
             GetVoterProgress getProgress => ExtractElectionIdFromVoterId(getProgress.VoterId),
             

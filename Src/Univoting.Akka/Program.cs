@@ -7,6 +7,7 @@ using Akka.Actor;
 using Akka.Persistence.Sql.Hosting;
 using Univoting.Akka.Actors;
 using Univoting.Akka.Messages;
+using Univoting.Akka.Models;
 using Univoting.Akka.Utility;
 using Univoting.Models;
 
@@ -92,36 +93,55 @@ class Program
         try
         {
             var electionId = Guid.Parse("935f39e2-177c-4d1f-8d4d-7e1a2458e09e");
+
+            // Console.WriteLine("=== Univoting Akka.NET Demo ===");
+
+            // // 1. Create Election (idempotent)
+            // Console.WriteLine("1. Creating election...");
+
+            // // Check if election already exists
+            // try
+            // {
+            //     var existingElection = await supervisor.Ask<Election>(
+            //         new GetElection(electionId), TimeSpan.FromSeconds(5));
+            //     Console.WriteLine("✓ Election already exists, skipping creation");
+            // }
+            // catch (Exception)
+            // {
+            //     // Election doesn't exist, create it
+            //     var createResult = await supervisor.Ask<object>(
+            //         new CreateElection(electionId, "University Student Elections 2024", 
+            //             "Annual student body elections", null, "#0066CC"), TimeSpan.FromSeconds(10));
+
+            //     if (createResult is Status.Success)
+            //     {
+            //         Console.WriteLine("✓ Election created successfully");
+            //     }
+            //     else
+            //     {
+            //         Console.WriteLine($"✗ Failed to create election: {createResult}");
+            //         return;
+            //     }
+            // }
             
-            Console.WriteLine("=== Univoting Akka.NET Demo ===");
-            
-            // 1. Create Election (idempotent)
-            Console.WriteLine("1. Creating election...");
-            
-            // Check if election already exists
-            try
+            //request election data
+            var election = await supervisor.Ask<Election>(
+                new GetElection(electionId), TimeSpan.FromSeconds(5));
+            Console.WriteLine($"Election: {election.Name} - {election.Description}");
+    var summary = await supervisor.Ask<ElectionVotesSummary>(
+                new GetAllVotesForElection(electionId), TimeSpan.FromSeconds(5));
+            Console.WriteLine($"Election Summary: {summary.ElectionName} - Total Votes: {summary.TotalVotes}, Skipped Votes: {summary.TotalSkippedVotes}, Total Participation: {summary.TotalVotes + summary.TotalSkippedVotes}");
+            summary.PositionVotes.ForEach(pos =>
             {
-                var existingElection = await supervisor.Ask<Election>(
-                    new GetElection(electionId), TimeSpan.FromSeconds(5));
-                Console.WriteLine("✓ Election already exists, skipping creation");
-            }
-            catch (Exception)
-            {
-                // Election doesn't exist, create it
-                var createResult = await supervisor.Ask<object>(
-                    new CreateElection(electionId, "University Student Elections 2024", 
-                        "Annual student body elections", null, "#0066CC"), TimeSpan.FromSeconds(10));
-                
-                if (createResult is Status.Success)
+                Console.WriteLine($"Position: {pos.PositionName} - Votes: {pos.TotalVotesForPosition}, Skipped: {pos.SkippedVotesForPosition}, Total Participation: {pos.TotalParticipationForPosition}");
+                pos.CandidateVotes.ForEach(cand =>
                 {
-                    Console.WriteLine("✓ Election created successfully");
-                }
-                else
-                {
-                    Console.WriteLine($"✗ Failed to create election: {createResult}");
-                    return;
-                }
-            }
+                    Console.WriteLine($"  Candidate: {cand.CandidateName} - Votes: {cand.VoteCount}");
+                });
+            });
+
+
+
 
             // 2. Add Positions (idempotent)
             Console.WriteLine("\n2. Adding positions...");
@@ -294,17 +314,45 @@ class Program
             }
 
             // 8. Get election data
-            Console.WriteLine("\n8. Getting election information...");
-            var election = await supervisor.Ask<Election>(
-                new GetElection(electionId), TimeSpan.FromSeconds(5));
-            
-            Console.WriteLine($"Election: {election.Name} - {election.Description}");
+            Console.WriteLine("\n8. Getting election data...");
 
-            // 9. Get positions for election
-            var electionPositions = await supervisor.Ask<List<Position>>(
-                new GetPositionsForElection(electionId), TimeSpan.FromSeconds(5));
+            // 10. Get all votes summary
+            Console.WriteLine("\n10. Getting all votes summary...");
+            var votesSummary = await supervisor.Ask<ElectionVotesSummary>(
+                new GetAllVotesForElection(electionId), TimeSpan.FromSeconds(5));
             
-            Console.WriteLine($"Total positions in election: {electionPositions.Count}");
+            Console.WriteLine($"\n=== ELECTION RESULTS: {votesSummary.ElectionName} ===");
+            Console.WriteLine($"Total Votes Cast: {votesSummary.TotalVotes}");
+            Console.WriteLine($"Total Votes Skipped: {votesSummary.TotalSkippedVotes}");
+            Console.WriteLine($"Total Participation: {votesSummary.TotalVotes + votesSummary.TotalSkippedVotes}");
+            
+            foreach (var position in votesSummary.PositionVotes)
+            {
+                Console.WriteLine($"\n--- {position.PositionName} ---");
+                Console.WriteLine($"Votes Cast: {position.TotalVotesForPosition}, Skipped: {position.SkippedVotesForPosition}, Total Participation: {position.TotalParticipationForPosition}");
+                
+                if (position.CandidateVotes.Any())
+                {
+                    Console.WriteLine("Results:");
+                    for (int i = 0; i < position.CandidateVotes.Count; i++)
+                    {
+                        var candidate = position.CandidateVotes[i];
+                        var rank = i + 1;
+                        var suffix = rank switch
+                        {
+                            1 => "st",
+                            2 => "nd", 
+                            3 => "rd",
+                            _ => "th"
+                        };
+                        Console.WriteLine($"  {rank}{suffix}: {candidate.CandidateName} - {candidate.VoteCount} votes");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("  No votes cast for this position");
+                }
+            }
 
             Console.WriteLine("\n=== Demo completed successfully! ===");
         }
