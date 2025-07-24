@@ -1,4 +1,5 @@
-using Univoting.Akka.SharedModels;
+
+using Univoting.Akka.Models;
 
 namespace Univoting.Akka.Actors.States;
 

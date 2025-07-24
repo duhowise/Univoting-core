@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Univoting.Akka.SharedModels
+namespace Univoting.Akka.Models
 {
     public class SkippedVote:KeyModel
     {

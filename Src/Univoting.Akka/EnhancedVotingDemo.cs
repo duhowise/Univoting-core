@@ -1,7 +1,7 @@
 using Akka.Actor;
 using Univoting.Akka.Messages;
 using Univoting.Akka.Models;
-using Univoting.Akka.SharedModels;
+
 using static System.Collections.Specialized.BitVector32;
 
 namespace Univoting.Akka;

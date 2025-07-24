@@ -4,7 +4,6 @@ using Univoting.Akka.Messages;
 using Univoting.Akka.Actors.States;
 using Univoting.Akka.Actors.Snapshots;
 using Univoting.Akka.Models;
-using Univoting.Akka.SharedModels;
 
 namespace Univoting.Akka.Actors;
 

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Univoting.Akka.SharedModels
+namespace Univoting.Akka.Models
 {
     public class KeyModel
     {

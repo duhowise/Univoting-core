@@ -1,9 +1,9 @@
 ﻿using System;
 
-namespace Univoting.Akka.SharedModels
+namespace Univoting.Akka.Models
 {
-    public class Department:KeyModel
-    {  
+    public class PollingStation:KeyModel
+    {
         public string Name { get; set; }
         public Guid ElectionId { get; set; }
     }
