@@ -3,7 +3,7 @@ using Akka.TestKit.Xunit2;
 using Univoting.Akka.Actors;
 using Univoting.Akka.Actors.MessageExtractors;
 using Univoting.Akka.Messages;
-using Univoting.Models;
+using Univoting.Akka.SharedModels;
 using Xunit;
 using Xunit.Abstractions;
 
