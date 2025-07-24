@@ -4,6 +4,7 @@ using Univoting.Akka.Actors;
 using Univoting.Akka.Actors.MessageExtractors;
 using Univoting.Akka.Messages;
 using Univoting.Akka.SharedModels;
+using Univoting.Akka.Utility;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -27,7 +28,7 @@ public class ElectionActorTests : TestKit
     public void ElectionActor_Should_Create_Election_Successfully()
     {
         // Arrange
-        var electionId = Guid.NewGuid().ToString();
+        var electionId = Guid.NewGuid();
         var parent = CreateElectionsParent();
         
         // Act & Assert - Create Election
@@ -47,9 +48,9 @@ public class ElectionActorTests : TestKit
     public void ElectionActor_Should_Add_Position_And_Candidate()
     {
         // Arrange
-        var electionId = Guid.NewGuid().ToString();
-        var positionId = Guid.NewGuid().ToString();
-        var candidateId = Guid.NewGuid().ToString();
+        var electionId = Guid.NewGuid();
+        var positionId = Guid.NewGuid();
+        var candidateId = Guid.NewGuid();
         var parent = CreateElectionsParent();
         
         // Create Election
@@ -77,10 +78,10 @@ public class ElectionActorTests : TestKit
     public void ElectionActor_Should_Register_Voter_And_Cast_Vote()
     {
         // Arrange
-        var electionId = Guid.NewGuid().ToString();
-        var positionId = Guid.NewGuid().ToString();
-        var candidateId = Guid.NewGuid().ToString();
-        var voterId = Guid.NewGuid().ToString();
+        var electionId = Guid.NewGuid();
+        var positionId = Guid.NewGuid();
+        var candidateId = Guid.NewGuid();
+        var voterId = Guid.NewGuid();
         var parent = CreateElectionsParent();
         
         // Setup election, position, candidate
@@ -111,9 +112,9 @@ public class ElectionActorTests : TestKit
     public void ElectionActor_Should_Skip_Vote_Successfully()
     {
         // Arrange
-        var electionId = Guid.NewGuid().ToString();
-        var positionId = Guid.NewGuid().ToString();
-        var voterId = Guid.NewGuid().ToString();
+        var electionId = Guid.NewGuid();
+        var positionId = Guid.NewGuid();
+        var voterId = Guid.NewGuid();
         var parent = CreateElectionsParent();
         
         // Setup election, position, voter
@@ -140,10 +141,10 @@ public class ElectionActorTests : TestKit
     public void ElectionActor_Should_Prevent_Duplicate_Votes()
     {
         // Arrange
-        var electionId = Guid.NewGuid().ToString();
-        var positionId = Guid.NewGuid().ToString();
-        var candidateId = Guid.NewGuid().ToString();
-        var voterId = Guid.NewGuid().ToString();
+        var electionId = Guid.NewGuid();
+        var positionId = Guid.NewGuid();
+        var candidateId = Guid.NewGuid();
+        var voterId = Guid.NewGuid();
         var parent = CreateElectionsParent();
         
         // Setup election, position, candidate, voter
@@ -177,8 +178,8 @@ public class ElectionActorTests : TestKit
     public void ElectionActor_Should_Update_Voter_Status()
     {
         // Arrange
-        var electionId = Guid.NewGuid().ToString();
-        var voterId = Guid.NewGuid().ToString();
+        var electionId = Guid.NewGuid();
+        var voterId = Guid.NewGuid();
         var parent = CreateElectionsParent();
         
         // Setup election and voter
@@ -204,9 +205,9 @@ public class ElectionActorTests : TestKit
     public void ElectionActor_Should_Add_Moderator_And_Department()
     {
         // Arrange
-        var electionId = Guid.NewGuid().ToString();
-        var moderatorId = Guid.NewGuid().ToString();
-        var departmentId = Guid.NewGuid().ToString();
+        var electionId = Guid.NewGuid();
+        var moderatorId = Guid.NewGuid();
+        var departmentId = Guid.NewGuid();
         var parent = CreateElectionsParent();
         
         // Setup election
@@ -222,7 +223,7 @@ public class ElectionActorTests : TestKit
         ExpectMsg<Status.Success>();
         
         // Add Polling Station
-        parent.Tell(new AddPollingStation(electionId, Guid.NewGuid().ToString(), "Main Hall"));
+        parent.Tell(new AddPollingStation(electionId, Guid.NewGuid(), "Main Hall"));
         ExpectMsg<Status.Success>();
         
         _output.WriteLine("Successfully added moderator, department, and polling station");
