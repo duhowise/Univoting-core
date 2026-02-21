@@ -1,4 +1,4 @@
-﻿namespace Univoting.Models
+﻿namespace Univoting.Akka.Models
 {
     public class Priority:KeyModel
     {

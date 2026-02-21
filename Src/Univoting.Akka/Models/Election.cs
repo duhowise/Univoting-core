@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Univoting.Models
+namespace Univoting.Akka.Models
 {
     public class Election:KeyModel
     {

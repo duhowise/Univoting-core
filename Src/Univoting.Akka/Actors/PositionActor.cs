@@ -3,7 +3,7 @@ using Akka.Persistence;
 using Univoting.Akka.Messages;
 using Univoting.Akka.Models;
 using Univoting.Akka.Actors.States;
-using Univoting.Models;
+
 
 namespace Univoting.Akka.Actors;
 

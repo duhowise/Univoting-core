@@ -1,5 +1,3 @@
-using Univoting.Models;
-
 namespace Univoting.Akka.Models;
 
 public class VoterVotingHistory

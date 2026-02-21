@@ -3,14 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36221.1 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Univoting.Models", "Src\Univoting.Models\Univoting.Models.csproj", "{6B32C7EE-1A9D-41B1-B3D5-F8908670C527}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Univoting.Services", "Src\Univoting.Services\Univoting.Services.csproj", "{11DEA05A-0C9A-40E5-9F86-2373E74D0C30}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Univoting.Data", "Src\Univoting.Data\Univoting.Data.csproj", "{AB2F857D-70A6-4334-9E81-6AE55C0324FD}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Univoting.ConsoleClient", "Src\Univoting.ConsoleClient\Univoting.ConsoleClient.csproj", "{DC23CEB3-696A-447B-8C18-238B9F6D450C}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Univoting.Akka", "Src\Univoting.Akka\Univoting.Akka.csproj", "{E8F4B123-4567-4890-ABC1-DEF234567890}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Univoting.Akka.Tests", "Tests\Univoting.Akka.Tests\Univoting.Akka.Tests.csproj", "{4637AF27-9BBF-4ED1-984E-09410BF12752}"
@@ -21,22 +13,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{6B32C7EE-1A9D-41B1-B3D5-F8908670C527}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6B32C7EE-1A9D-41B1-B3D5-F8908670C527}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6B32C7EE-1A9D-41B1-B3D5-F8908670C527}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6B32C7EE-1A9D-41B1-B3D5-F8908670C527}.Release|Any CPU.Build.0 = Release|Any CPU
-		{11DEA05A-0C9A-40E5-9F86-2373E74D0C30}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{11DEA05A-0C9A-40E5-9F86-2373E74D0C30}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{11DEA05A-0C9A-40E5-9F86-2373E74D0C30}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{11DEA05A-0C9A-40E5-9F86-2373E74D0C30}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AB2F857D-70A6-4334-9E81-6AE55C0324FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AB2F857D-70A6-4334-9E81-6AE55C0324FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AB2F857D-70A6-4334-9E81-6AE55C0324FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AB2F857D-70A6-4334-9E81-6AE55C0324FD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DC23CEB3-696A-447B-8C18-238B9F6D450C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DC23CEB3-696A-447B-8C18-238B9F6D450C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DC23CEB3-696A-447B-8C18-238B9F6D450C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DC23CEB3-696A-447B-8C18-238B9F6D450C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E8F4B123-4567-4890-ABC1-DEF234567890}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E8F4B123-4567-4890-ABC1-DEF234567890}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E8F4B123-4567-4890-ABC1-DEF234567890}.Release|Any CPU.ActiveCfg = Release|Any CPU

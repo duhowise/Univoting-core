@@ -24,8 +24,6 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.0-preview.5.25277.114" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Univoting.Models\Univoting.Models.csproj" />
-  </ItemGroup>
+
 
 </Project>
