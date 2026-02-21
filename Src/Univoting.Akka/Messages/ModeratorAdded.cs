@@ -1,5 +1,3 @@
-
-
 using Univoting.Akka.Models;
 
 namespace Univoting.Akka.Messages;
