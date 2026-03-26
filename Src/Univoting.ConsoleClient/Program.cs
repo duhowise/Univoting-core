@@ -1,63 +1,82 @@
-﻿using System;
-using System.IO;
+using System;
 using System.Threading.Tasks;
-using Grpc.Net.Client;
-using Microsoft.Extensions.Configuration;
-using Univoting.Services;
+using Akka.Actor;
+using Akka.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Univoting.Actors;
 
 namespace Univoting.ConsoleClient
 {
     class Program
     {
-        static  GrpcChannel _channel;
-
-      
-        private static LiveViewService.LiveViewServiceClient _liveViewService;
-        private static voteCountResult _positionCount=null;
-        private static voteCountResult _positionSkippedCount=null;
-
-        protected static Univoting.Services.LiveViewService.LiveViewServiceClient LiveViewServiceClient
+        public static async Task Main(string[] args)
+            // Register LiveViewActor for real-time dashboard
+            var liveViewActor = system.ActorOf(Props.Create(() => new LiveViewActor()), "liveview");
         {
-            get
-            {
-                if (_liveViewService != null) return _liveViewService;
-                _liveViewService = new Univoting.Services.LiveViewService.LiveViewServiceClient(_channel);
-                return _liveViewService;
-            }
-
-        }
-        static async Task Main(string[] args)
-        {
-            IConfiguration configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", true, true)
-                .Build();
-
-            _channel = GrpcChannel.ForAddress(configuration.GetValue<string>("ServerAddress"));
-            var positionsResult =await LiveViewServiceClient.GetAllPositionsAsync(new GetAllPositionsRequest
-            {
-                ElectionId = "3f8e6896-4c7d-15f5-a018-75d8bd200d7c"
-            });
-
-
-
-            foreach (var position in positionsResult.Positions)
-            {
-                _positionCount = await LiveViewServiceClient.GetVotesForPositionAsync(new voteCountRequest
+            var builder = Host.CreateDefaultBuilder(args)
+                .ConfigureServices((context, services) =>
                 {
-                    PositionId = position.PositionId
+                    services.AddAkka("UnivotingSystem", (akka, provider) =>
+                    {
+                        akka.WithActors((system, registry) =>
+                        {
+                            // Register GenericChildPerEntityParent for each actor type
+                            system.ActorOf(
+                                Univoting.Actors.Utility.GenericChildPerEntityParent.Props(
+                                    new Univoting.Actors.Utility.CandidateMessageExtractor(),
+                                    id => provider.Props<CandidateActor>()),
+                                "candidate-parent");
+
+                            system.ActorOf(
+                                Univoting.Actors.Utility.GenericChildPerEntityParent.Props(
+                                    new Univoting.Actors.Utility.VoterMessageExtractor(),
+                                    id => provider.Props<VoterActor>()),
+                                "voter-parent");
+
+                            system.ActorOf(
+                                Univoting.Actors.Utility.GenericChildPerEntityParent.Props(
+                                    new Univoting.Actors.Utility.VoteMessageExtractor(),
+                                    id => provider.Props<VoteActor>()),
+                                "vote-parent");
+
+                            system.ActorOf(
+                                Univoting.Actors.Utility.GenericChildPerEntityParent.Props(
+                                    new Univoting.Actors.Utility.SkippedVoteMessageExtractor(),
+                                    id => provider.Props<SkippedVoteActor>()),
+                                "skippedvote-parent");
+
+                            system.ActorOf(
+                                Univoting.Actors.Utility.GenericChildPerEntityParent.Props(
+                                    new Univoting.Actors.Utility.ModeratorMessageExtractor(),
+                                    id => provider.Props<ModeratorActor>()),
+                                "moderator-parent");
+
+                            system.ActorOf(
+                                Univoting.Actors.Utility.GenericChildPerEntityParent.Props(
+                                    new Univoting.Actors.Utility.PositionMessageExtractor(),
+                                    id => provider.Props<PositionActor>()),
+                                "position-parent");
+
+                            system.ActorOf(
+                                Univoting.Actors.Utility.GenericChildPerEntityParent.Props(
+                                    new Univoting.Actors.Utility.DepartmentMessageExtractor(),
+                                    id => provider.Props<DepartmentActor>()),
+                                "department-parent");
+
+                            system.ActorOf(
+                                Univoting.Actors.Utility.GenericChildPerEntityParent.Props(
+                                    new Univoting.Actors.Utility.PollingStationMessageExtractor(),
+                                    id => provider.Props<PollingStationActor>()),
+                                "pollingstation-parent");
+
+                            // LiveViewActor registration
+                            system.ActorOf(Akka.Actor.Props.Create(() => new LiveViewActor()), "liveview");
+                        });
+                    });
                 });
-                
-                _positionSkippedCount = await LiveViewServiceClient.GetSkippedVoteForPositionAsync(new voteCountRequest
-                {
-                    PositionId = position.PositionId
-                });
 
-
-                Console.WriteLine($"Position name {position.PositionName} has {_positionCount.Count} votes and {_positionSkippedCount.Count} Skipped votes");
-            }
-            Console.ReadLine();
-
+            await builder.RunConsoleAsync();
         }
     }
 }
